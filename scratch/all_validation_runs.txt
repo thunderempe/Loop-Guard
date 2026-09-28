@@ -1,0 +1,1103 @@
+
+================================================================================
+RUNNING: notebooks/02_validate_setpoint_tracking.py
+================================================================================
+RETURNCODE: 0
+STDOUT:
+Loaded: 30,000 rows, 60 loops
+
+==============================================================================
+SUMMARY: mean ± std per fault type (10 loops each)
+==============================================================================
+fault_type                     mean_error        error_slope     rmse_error      r2_linear
+------------------------------------------------------------------------------------------
+  healthy                  +0.003 ± 0.461 -0.00050 ± 0.00169  1.782 ± 0.351 0.0175 ± 0.0217
+  sensor_drift             -6.913 ± 2.665 -0.03905 ± 0.01529  9.201 ± 3.372 0.8505 ± 0.0840
+  valve_stiction_v1        +0.086 ± 0.211 +0.00064 ± 0.00255  1.811 ± 0.395 0.0316 ± 0.0268
+  valve_stiction_v2        -0.080 ± 0.546 +0.00026 ± 0.00126  1.734 ± 0.369 0.0114 ± 0.0139
+  oscillatory_tuning       -0.191 ± 0.153 +0.00109 ± 0.00063  2.006 ± 0.417 0.0080 ± 0.0075
+  noise                    +0.124 ± 0.543 +0.00092 ± 0.00104  3.028 ± 0.809 0.0041 ± 0.0057
+
+==============================================================================
+FULL PER-LOOP TABLE (sorted by r2_linear DESC)
+==============================================================================
+ loop_id         fault_type mean_error error_slope rmse_error r2_linear
+      16       sensor_drift    -11.506   -0.061222     14.640    0.9530
+      17       sensor_drift    -11.825   -0.066966     15.465    0.9405
+      18       sensor_drift     -6.452   -0.038702      8.699    0.9164
+      13       sensor_drift     -6.518   -0.034413      8.383    0.8877
+      20       sensor_drift     -5.827   -0.038552      8.335    0.8719
+      15       sensor_drift     -6.265   -0.044058      9.289    0.8597
+      12       sensor_drift     -4.592   -0.028153      6.409    0.8264
+      14       sensor_drift     -6.736   -0.035496      8.854    0.7950
+      11       sensor_drift     -3.823   -0.017182      4.749    0.7746
+      19       sensor_drift     -5.587   -0.025794      7.184    0.6798
+      24  valve_stiction_v1     +0.038   +0.005188      2.616    0.0820
+      29  valve_stiction_v1     -0.026   +0.003056      1.782    0.0613
+       4            healthy     -0.208   -0.002912      1.819    0.0541
+      10            healthy     +0.000   -0.002743      1.874    0.0446
+      25  valve_stiction_v1     -0.023   +0.002419      1.660    0.0443
+      22  valve_stiction_v1     -0.017   -0.002935      2.070    0.0419
+      39  valve_stiction_v2     +0.645   -0.002102      1.617    0.0418
+       2            healthy     -0.107   +0.002650      2.007    0.0364
+      26  valve_stiction_v1     -0.141   -0.001846      1.472    0.0331
+       3            healthy     +0.000   -0.002000      1.623    0.0317
+      23  valve_stiction_v1     -0.002   +0.002233      1.918    0.0282
+      40  valve_stiction_v2     -0.572   +0.002505      2.302    0.0263
+      46 oscillatory_tuning     -0.200   +0.001875      1.803    0.0228
+      30  valve_stiction_v1     -0.109   -0.001581      1.647    0.0193
+      50 oscillatory_tuning     -0.000   +0.001805      1.926    0.0183
+      33  valve_stiction_v2     -0.271   +0.001027      1.188    0.0164
+      53              noise     -0.015   +0.002260      2.557    0.0163
+      32  valve_stiction_v2     -0.355   +0.001200      1.450    0.0152
+      45 oscillatory_tuning     -0.307   +0.001258      1.714    0.0116
+      60              noise     +0.131   +0.002705      3.645    0.0115
+      31  valve_stiction_v2     -0.461   +0.000992      1.642    0.0083
+      42 oscillatory_tuning     -0.032   +0.001415      2.301    0.0079
+      54              noise     -0.705   +0.001625      2.878    0.0071
+      47 oscillatory_tuning     -0.041   +0.001025      1.784    0.0069
+      48 oscillatory_tuning     -0.216   +0.001697      3.098    0.0063
+      27  valve_stiction_v1     +0.452   -0.000853      2.125    0.0035
+      49 oscillatory_tuning     -0.239   +0.000697      1.833    0.0031
+      38  valve_stiction_v2     +0.403   -0.000541      1.577    0.0026
+      41 oscillatory_tuning     -0.512   +0.000644      1.911    0.0025
+       6            healthy     +0.450   -0.000510      1.558    0.0024
+       8            healthy     +0.375   -0.000472      1.469    0.0023
+       9            healthy     -0.917   +0.000782      2.542    0.0023
+      52              noise     +0.484   -0.000593      2.179    0.0016
+      57              noise     -0.565   +0.001220      4.512    0.0015
+      56              noise     +0.459   +0.000911      3.514    0.0014
+      28  valve_stiction_v1     +0.353   +0.000403      1.630    0.0013
+      21  valve_stiction_v1     +0.330   +0.000278      1.190    0.0012
+      37  valve_stiction_v2     +0.588   -0.000502      2.199    0.0012
+      34  valve_stiction_v2     -0.787   +0.000418      2.163    0.0009
+      35  valve_stiction_v2     +0.486   -0.000338      1.739    0.0009
+      55              noise     +0.491   +0.000628      3.195    0.0008
+      43 oscillatory_tuning     -0.127   +0.000373      1.933    0.0008
+       5            healthy     +0.371   +0.000179      1.250    0.0005
+      51              noise     -0.440   +0.000203      1.770    0.0003
+       7            healthy     -0.480   +0.000151      1.782    0.0002
+      59              noise     +0.936   +0.000214      3.508    0.0001
+       1            healthy     +0.550   -0.000090      1.900    0.0001
+      44 oscillatory_tuning     -0.234   +0.000072      1.761    0.0000
+      36  valve_stiction_v2     -0.475   -0.000020      1.461    0.0000
+      58              noise     +0.465   +0.000001      2.518    0.0000
+
+==============================================================================
+FLAG TABLE: Non-drift loops that exceed 50% of min sensor_drift signal
+  Thresholds used -> |mean_error| > 1.911 | |error_slope| > 0.008591 | r2_linear > 0.3399
+==============================================================================
+  [OK] No false-positive flags -- all non-drift loops are cleanly below thresholds.
+
+==============================================================================
+SEPARATION ANALYSIS: sensor_drift vs. all other fault types
+==============================================================================
+  mean_error    : sensor_drift abs_mean = 6.9131  |  next-worst abs_mean = 0.5043  |  separation ratio = 13.7×
+  error_slope   : sensor_drift abs_mean = 0.0391  |  next-worst abs_mean = 0.0021  |  separation ratio = 18.8×
+  r2_linear     : sensor_drift abs_mean = 0.8505  |  next-worst abs_mean = 0.0316  |  separation ratio = 26.9×
+
+==============================================================================
+DONE — Diagnostic #1 validation complete.
+==============================================================================
+
+================================================================================
+RUNNING: notebooks/03_validate_oscillation_detection.py
+================================================================================
+RETURNCODE: 0
+STDOUT:
+Loaded 30,000 rows, 60 loops
+
+===============================================================================================
+SUMMARY (windowed-max ACF): mean +/- std per fault type  (10 loops each)
+===============================================================================================
+fault_type                 osc_amplitude       acf_osc_score    ZCR/100steps    dom_period
+-----------------------------------------------------------------------------------------------
+  healthy                1.718 +/- 0.324   0.1616 +/- 0.0395   0.84 +/- 0.13  55.4 +/- 6.0
+  sensor_drift           2.093 +/- 0.438   0.2392 +/- 0.0635   1.00 +/- 0.21  59.0 +/- 4.9
+  valve_stiction_v1      1.766 +/- 0.379   0.4966 +/- 0.2466   2.12 +/- 0.80  52.6 +/- 7.1
+  valve_stiction_v2      1.648 +/- 0.351   0.3714 +/- 0.1595   1.28 +/- 0.40  56.8 +/- 5.5
+  oscillatory_tuning     1.985 +/- 0.421   0.5895 +/- 0.2044   4.97 +/- 3.52  16.8 +/- 4.1
+  noise                  2.977 +/- 0.811   0.2539 +/- 0.0427  43.03 +/- 2.93  25.8 +/- 17.3
+
+===============================================================================================
+SPOTLIGHT: Previously low-scoring episodic oscillatory loops
+  (Old full-series scores from investigation: 41=0.1049, 45=0.1966, 46=0.1725)
+===============================================================================================
+  loop 41  kp_x=2.8  ki_x=2.0  acf_osc_score=0.2322  osc_amp=1.841  period=14  zcr=2.00
+  loop 44  kp_x=4.0  ki_x=3.2  acf_osc_score=0.5369  osc_amp=1.748  period=24  zcr=2.81
+  loop 45  kp_x=4.5  ki_x=3.5  acf_osc_score=0.6138  osc_amp=1.678  period=14  zcr=3.41
+  loop 46  kp_x=3.0  ki_x=2.2  acf_osc_score=0.4425  osc_amp=1.773  period=14  zcr=3.01
+  loop 49  kp_x=4.2  ki_x=3.3  acf_osc_score=0.5866  osc_amp=1.816  period=24  zcr=3.21
+  loop 50  kp_x=4.8  ki_x=3.8  acf_osc_score=0.6167  osc_amp=1.910  period=14  zcr=6.21
+
+===============================================================================================
+FULL PER-LOOP TABLE (sorted by acf_osc_score DESC)
+===============================================================================================
+ loop_id         fault_type osc_amplitude acf_osc_score zero_crossing_rate dominant_period
+      48 oscillatory_tuning         3.084        0.9324             11.222              14
+      43 oscillatory_tuning         1.930        0.8940             11.423              14
+      26  valve_stiction_v1         1.443        0.7931              2.806              50
+      28  valve_stiction_v1         1.592        0.7926              3.607              44
+      38  valve_stiction_v2         1.524        0.7403              1.804              52
+      30  valve_stiction_v1         1.629        0.7370              2.605              62
+      21  valve_stiction_v1         1.144        0.7207              2.806              54
+      50 oscillatory_tuning         1.910        0.6167              6.212              14
+      45 oscillatory_tuning         1.678        0.6138              3.407              14
+      49 oscillatory_tuning         1.816        0.5866              3.206              24
+      47 oscillatory_tuning         1.779        0.5565              3.407              18
+      33  valve_stiction_v2         1.149        0.5455              1.603              62
+      44 oscillatory_tuning         1.748        0.5369              2.806              24
+      42 oscillatory_tuning         2.294        0.4838              3.006              18
+      22  valve_stiction_v1         2.028        0.4606              2.204              62
+      46 oscillatory_tuning         1.773        0.4425              3.006              14
+      31  valve_stiction_v2         1.571        0.4251              1.603              50
+      24  valve_stiction_v1         2.508        0.4135              1.403              62
+      27  valve_stiction_v1         2.075        0.3884              1.603              48
+      40  valve_stiction_v2         2.202        0.3465              1.804              62
+      15       sensor_drift         2.571        0.3461              0.802              50
+      51              noise         1.716        0.3319             36.874               8
+      17       sensor_drift         2.433        0.3319              1.202              58
+      32  valve_stiction_v2         1.396        0.3123              1.202              50
+      39  valve_stiction_v2         1.453        0.3048              0.802              50
+      25  valve_stiction_v1         1.624        0.2974              1.603              44
+      60              noise         3.625        0.2954             45.291              14
+      14       sensor_drift         2.604        0.2875              0.802              62
+      56              noise         3.485        0.2862             45.090              28
+      36  valve_stiction_v2         1.383        0.2853              1.202              60
+      58              noise         2.477        0.2851             44.890              12
+      34  valve_stiction_v2         2.016        0.2612              1.202              62
+      37  valve_stiction_v2         2.120        0.2550              0.802              60
+      59              noise         3.384        0.2389             38.878              14
+      19       sensor_drift         2.558        0.2376              0.802              62
+      35  valve_stiction_v2         1.671        0.2376              0.802              60
+      53              noise         2.539        0.2361             43.687              12
+      29  valve_stiction_v1         1.728        0.2346              1.202              50
+      41 oscillatory_tuning         1.841        0.2322              2.004              14
+      55              noise         3.159        0.2322             45.691              60
+      16       sensor_drift         1.964        0.2307              1.202              62
+       2            healthy         1.969        0.2242              1.002              62
+      57              noise         4.478        0.2183             43.487              30
+      20       sensor_drift         2.135        0.2179              0.802              62
+      12       sensor_drift         1.865        0.2170              1.202              62
+      52              noise         2.125        0.2110             42.285              32
+       4            healthy         1.759        0.2074              0.601              50
+      54              noise         2.783        0.2041             44.088              48
+       7            healthy         1.718        0.1991              0.802              62
+      18       sensor_drift         1.689        0.1857              0.802              62
+      10            healthy         1.834        0.1778              1.002              62
+      13       sensor_drift         1.768        0.1752              1.202              60
+      11       sensor_drift         1.339        0.1621              1.202              50
+       5            healthy         1.195        0.1590              0.802              62
+       9            healthy         2.371        0.1585              0.802              56
+       6            healthy         1.491        0.1300              0.802              50
+      23  valve_stiction_v1         1.893        0.1283              1.403              50
+       3            healthy         1.598        0.1259              1.002              50
+       1            healthy         1.821        0.1237              0.802              50
+       8            healthy         1.420        0.1103              0.802              50
+
+===============================================================================================
+SEPARATION: oscillatory_tuning vs. all other fault types
+===============================================================================================
+  osc_amplitude         : osc_tuning=1.9853  next-worst=2.9770  (noise)  ratio=0.7x
+  acf_osc_score         : osc_tuning=0.5895  next-worst=0.4966  (valve_stiction_v1)  ratio=1.2x
+
+===============================================================================================
+SANITY CHECK: Do healthy/noise/sensor_drift loops get spuriously high
+acf_osc_score from a lucky 125-step sub-window?
+(If windowing introduces false positives, healthy/noise scores should jump here)
+===============================================================================================
+  Total windows evaluated across healthy/noise/sensor_drift: 240
+
+  healthy               : window scores: mean=0.0797  max=0.2242  p95=0.1844  p99=0.2109
+  noise                 : window scores: mean=0.1797  max=0.3319  p95=0.2580  p99=0.3031
+  sensor_drift          : window scores: mean=0.0804  max=0.3461  p95=0.2658  p99=0.3349
+
+  [OK] No healthy/noise/sensor_drift window scores above 0.5.
+
+===============================================================================================
+STICTION AMBIGUOUS ZONE: acf_osc_score in [0.5, 0.7] (carry-forward for D#3)
+===============================================================================================
+  1 loop(s):
+ loop_id        fault_type  osc_amplitude  acf_osc_score  zero_crossing_rate  dominant_period
+      33 valve_stiction_v2       1.148557       0.545526            1.603206             62.0
+
+  Full stiction acf_osc_score range:
+  valve_stiction_v1   : [0.1283, 0.7931]  values: ['0.1283', '0.2346', '0.2974', '0.3884', '0.4135', '0.4606', '0.7207', '0.7370', '0.7926', '0.7931']
+  valve_stiction_v2   : [0.2376, 0.7403]  values: ['0.2376', '0.2550', '0.2612', '0.2853', '0.3048', '0.3123', '0.3465', '0.4251', '0.5455', '0.7403']
+
+===============================================================================================
+DONE -- Windowed ACF validation complete.
+===============================================================================================
+
+================================================================================
+RUNNING: notebooks/04_validate_stiction_detection.py
+================================================================================
+RETURNCODE: 0
+STDOUT:
+Loaded 30,000 rows, 60 loops
+
+============================================================================
+THRESHOLDS USED
+============================================================================
+  Oscillation gate:  (ZCR > 1.3) OR (ZCR > 0.9 AND acf_osc_score > 0.34)
+                     AND ZCR < 30
+    ZCR > 1.3       : healthy max ZCR = 1.002, sensor_drift max = 1.202
+    ZCR > 0.9       : blocks sensor_drift (ZCR <= 0.802) from acf branch
+    acf_osc_score   : 0.34 -- above sensor_drift loop 17 max (0.332)
+    ZCR < 30        : noise min ZCR = 36.9
+  Stiction flag:     gate_pass AND op_pv_corr < 0.25
+    op_pv_corr gap  : stiction [-.03, 0.16] vs osc_tuning [0.41, 0.84]
+
+============================================================================
+PER-CLASS FLAG SUMMARY (10 loops each)
+============================================================================
+  fault_type               flagged  expected                result
+  ----------------------------------------------------------------
+  healthy                        0         0                    OK
+  sensor_drift                   0         0                    OK
+  valve_stiction_v1              9        10               MISS x1
+  valve_stiction_v2              4        10               MISS x6
+  oscillatory_tuning             0         0                    OK
+  noise                          0         0                    OK
+
+  Total false positives : 0
+  Total misses          : 7  (stiction_v2 mild cases -- see section 4)
+
+============================================================================
+op_pv_corr SEPARATION: stiction vs. oscillatory_tuning
+============================================================================
+  stiction (all 20 loops)  : [-0.0248, 0.1614]  mean=0.0695
+  oscillatory_tuning       : [0.4118, 0.8362]  mean=0.5373
+  Gap (osc_min - stict_max): 0.2504  CLEAN (no overlap)
+
+  op_pv_corr by class:
+    healthy               : [0.0150, 0.1267]  mean=0.0648
+    sensor_drift          : [0.0090, 0.1368]  mean=0.0590
+    valve_stiction_v1     : [0.0208, 0.1473]  mean=0.0829
+    valve_stiction_v2     : [-0.0248, 0.1614]  mean=0.0560
+    oscillatory_tuning    : [0.4118, 0.8362]  mean=0.5373
+    noise                 : [0.8428, 0.9720]  mean=0.9276
+
+============================================================================
+HARD LOOP SPOTLIGHT (6 stiction loops most similar to oscillatory_tuning)
+  These scored highest acf_osc_score in D#2, overlapping osc_tuning range
+============================================================================
+   loop_id  fault_type              op_pv_corr    op_curvature   op_delta_cv                  flag
+  ----------------------------------------------------------------------------------------------
+        21  valve_stiction_v1           0.1105          0.1493        5.7347    TRUE  <-- detected
+        26  valve_stiction_v1           0.0909          0.1530        3.7276    TRUE  <-- detected
+        28  valve_stiction_v1           0.0960          0.1470        3.4819    TRUE  <-- detected
+        30  valve_stiction_v1           0.0810          0.1479        4.3776    TRUE  <-- detected
+        33  valve_stiction_v2           0.0897          0.1389        6.5807    TRUE  <-- detected
+        38  valve_stiction_v2           0.1614          0.1445        5.5887    TRUE  <-- detected
+
+  osc_tuning op_pv_corr range: [0.4118, 0.8362]
+
+============================================================================
+MISSED STICTION LOOPS (stiction_flag=False)
+  Root cause: ZCR and acf_osc_score indistinguishable from healthy/drift.
+  op_pv_corr is still low (correct signal); only the gate blocks the flag.
+============================================================================
+  loop 29  valve_stiction_v1   : op_pv_corr=0.0410  (corr OK; gate blocked)
+  loop 32  valve_stiction_v2   : op_pv_corr=0.0313  (corr OK; gate blocked)
+  loop 34  valve_stiction_v2   : op_pv_corr=-0.0248  (corr OK; gate blocked)
+  loop 35  valve_stiction_v2   : op_pv_corr=0.0720  (corr OK; gate blocked)
+  loop 36  valve_stiction_v2   : op_pv_corr=0.0148  (corr OK; gate blocked)
+  loop 37  valve_stiction_v2   : op_pv_corr=0.0500  (corr OK; gate blocked)
+  loop 39  valve_stiction_v2   : op_pv_corr=0.0492  (corr OK; gate blocked)
+
+============================================================================
+FULL PER-LOOP TABLE (by fault_type then loop_id)
+============================================================================
+ loop_id         fault_type op_pv_corr op_curvature op_delta_cv  stiction_flag
+       1            healthy     0.0949       0.1468     10.2258          False
+       2            healthy     0.0436       0.1521      9.8634          False
+       3            healthy     0.1265       0.1417      9.7835          False
+       4            healthy     0.0183       0.1476     10.7691          False
+       5            healthy     0.0432       0.1445     11.0904          False
+       6            healthy     0.0950       0.1465     10.2467          False
+       7            healthy     0.0429       0.1542      9.7300          False
+       8            healthy     0.1267       0.1409      9.8444          False
+       9            healthy     0.0150       0.1551     10.2541          False
+      10            healthy     0.0419       0.1482     10.8041          False
+      51              noise     0.8428       1.3111      0.9052          False
+      52              noise     0.9154       1.4119      0.7721          False
+      53              noise     0.8926       1.3263      0.7913          False
+      54              noise     0.9434       1.4477      0.7270          False
+      55              noise     0.9665       1.4111      0.7628          False
+      56              noise     0.9720       1.4006      0.7637          False
+      57              noise     0.9524       1.4087      0.7524          False
+      58              noise     0.9139       1.3495      0.8301          False
+      59              noise     0.9204       1.3477      0.8347          False
+      60              noise     0.9567       1.4376      0.7307          False
+      41 oscillatory_tuning     0.4418       0.1600      5.9603          False
+      42 oscillatory_tuning     0.4118       0.1615      5.1820          False
+      43 oscillatory_tuning     0.8164       0.3116      1.4059          False
+      44 oscillatory_tuning     0.4278       0.1631      4.2841          False
+      45 oscillatory_tuning     0.4680       0.1749      4.3584          False
+      46 oscillatory_tuning     0.4646       0.1640      5.3260          False
+      47 oscillatory_tuning     0.4616       0.1646      4.6210          False
+      48 oscillatory_tuning     0.8362       0.3880      0.9106          False
+      49 oscillatory_tuning     0.4643       0.1564      4.2166          False
+      50 oscillatory_tuning     0.5809       0.1925      3.5639          False
+      11       sensor_drift     0.0938       0.1474      8.3475          False
+      12       sensor_drift     0.0331       0.1544      8.3404          False
+      13       sensor_drift     0.1368       0.1414      7.6497          False
+      14       sensor_drift     0.0090       0.1491      8.2249          False
+      15       sensor_drift     0.0287       0.1373      7.6631          False
+      16       sensor_drift     0.0901       0.1447      6.5058          False
+      17       sensor_drift     0.0384       0.1524      6.5424          False
+      18       sensor_drift     0.1161       0.1415      6.6661          False
+      19       sensor_drift     0.0210       0.1490      8.7187          False
+      20       sensor_drift     0.0228       0.1475      8.0136          False
+      21  valve_stiction_v1     0.1105       0.1493      5.7347           True
+      22  valve_stiction_v1     0.0571       0.1576      6.1924           True
+      23  valve_stiction_v1     0.1473       0.1438      8.5561           True
+      24  valve_stiction_v1     0.0208       0.1566      7.6421           True
+      25  valve_stiction_v1     0.0996       0.1497      6.5508           True
+      26  valve_stiction_v1     0.0909       0.1530      3.7276           True
+      27  valve_stiction_v1     0.0852       0.1587      4.6644           True
+      28  valve_stiction_v1     0.0960       0.1470      3.4819           True
+      29  valve_stiction_v1     0.0410       0.1560      8.1222          False
+      30  valve_stiction_v1     0.0810       0.1479      4.3776           True
+      31  valve_stiction_v2     0.0816       0.1360      7.9145           True
+      32  valve_stiction_v2     0.0313       0.1491      7.4673          False
+      33  valve_stiction_v2     0.0897       0.1389      6.5807           True
+      34  valve_stiction_v2    -0.0248       0.1526      8.2751          False
+      35  valve_stiction_v2     0.0720       0.1352      9.8817          False
+      36  valve_stiction_v2     0.0148       0.1395      7.1753          False
+      37  valve_stiction_v2     0.0500       0.1525      8.8757          False
+      38  valve_stiction_v2     0.1614       0.1445      5.5887           True
+      39  valve_stiction_v2     0.0492       0.1503      7.3436          False
+      40  valve_stiction_v2     0.0347       0.1325      6.8527           True
+
+============================================================================
+DONE -- Diagnostic #3 validation complete.
+============================================================================
+
+================================================================================
+RUNNING: notebooks/05_validate_harris_index.py
+================================================================================
+RETURNCODE: 0
+STDOUT:
+Loaded 30,000 rows, 60 loops from labeled_loops.csv
+
+Running Diagnostic #4 across 60 loops for delay = 2, 3, 4...
+
+[1] MASKING & SAMPLE RETENTION
+    Startup settle   : 30 steps
+    SP step settle   : 65 steps (detected from SP changes at t=125, 325)
+    Samples retained : 340 per loop across all 60 loops (3 unmasked segments: 95, 135, 110 steps)
+
+==============================================================================
+[2] MULTI-DELAY COMPARISON (delay = 2, 3, 4) -- AIC ORDER SELECTION
+==============================================================================
+
+--- Delay = 2 ---
+  fault_type                   mean          min          max          std
+  ----------------------------------------------------
+  healthy                  0.000445     0.000000     0.002465     0.000775
+  sensor_drift             0.000000     0.000000     0.000001     0.000000
+  valve_stiction_v1        0.010577     0.001824     0.021884     0.007188
+  valve_stiction_v2        0.003607     0.000000     0.010991     0.003325
+  oscillatory_tuning       0.000026     0.000000     0.000100     0.000040
+  noise                    0.888147     0.823765     0.956328     0.044934
+
+--- Delay = 3 (default) ---
+  fault_type                   mean          min          max          std
+  ----------------------------------------------------
+  healthy                  0.000631     0.000000     0.003486     0.001096
+  sensor_drift             0.000001     0.000000     0.000002     0.000001
+  valve_stiction_v1        0.027030     0.004909     0.055001     0.017872
+  valve_stiction_v2        0.009524     0.000000     0.028545     0.008644
+  oscillatory_tuning       0.000096     0.000000     0.000377     0.000146
+  noise                    0.892534     0.823775     0.957012     0.047767
+
+--- Delay = 4 ---
+  fault_type                   mean          min          max          std
+  ----------------------------------------------------
+  healthy                  0.000798     0.000000     0.004388     0.001380
+  sensor_drift             0.000002     0.000000     0.000007     0.000002
+  valve_stiction_v1        0.052684     0.010104     0.105151     0.033795
+  valve_stiction_v2        0.019210     0.000000     0.056516     0.017142
+  oscillatory_tuning       0.000240     0.000001     0.000968     0.000363
+  noise                    0.893914     0.824657     0.957793     0.047885
+
+Class ordering by mean Harris Index (highest to lowest):
+  Delay = 2: noise > valve_stiction_v1 > valve_stiction_v2 > healthy > oscillatory_tuning > sensor_drift
+  Delay = 3: noise > valve_stiction_v1 > valve_stiction_v2 > healthy > oscillatory_tuning > sensor_drift
+  Delay = 4: noise > valve_stiction_v1 > valve_stiction_v2 > healthy > oscillatory_tuning > sensor_drift
+  Are class orderings identical at all three delays? YES (100% invariant)
+
+==============================================================================
+[3] AR ORDER SELECTION: AIC vs FIXED p=10 vs FIXED p=25 (delay = 3)
+==============================================================================
+
+  fault_type               mean_p    min_p    max_p
+  ----------------------------------------
+  healthy                     1.6        1        2
+  sensor_drift                5.2        2       26
+  valve_stiction_v1           2.0        2        2
+  valve_stiction_v2           2.4        2        4
+  oscillatory_tuning          3.0        3        3
+  noise                      25.4        5       30
+
+  Mean Harris Index comparison across model orders:
+  fault_type             AIC (adaptive)       Fixed p=10       Fixed p=25
+  --------------------------------------------------------
+  healthy                      0.000631     4.408787e-25     1.651546e-25
+  sensor_drift                 0.000001     9.434145e-07     1.102065e-06
+  valve_stiction_v1            0.027030     2.363566e-02     2.024975e-02
+  valve_stiction_v2            0.009524     9.911383e-03     1.057804e-02
+  oscillatory_tuning           0.000096     3.001255e-25     5.357371e-26
+  noise                        0.892534     9.545836e-01     9.017257e-01
+
+==============================================================================
+[4] HYPOTHESIS COMPARISON: EXPECTED vs ACTUAL RESULTS (delay = 3)
+==============================================================================
+  fault_type             Hypothesized             Actual Range    Actual Mean       Status
+  ----------------------------------------------------------------------------------------
+  healthy                 0.20 - 0.50     [0.000000, 0.003486]       0.000631        WRONG
+  sensor_drift            0.00 - 0.02     [0.000000, 0.000002]       0.000001    CONFIRMED
+  valve_stiction_v1       0.02 - 0.20     [0.004909, 0.055001]       0.027030    CONFIRMED
+  valve_stiction_v2       0.02 - 0.20     [0.000000, 0.028545]       0.009524    CONFIRMED
+  oscillatory_tuning      0.05 - 0.70     [0.000000, 0.000377]       0.000096        WRONG
+  noise                   0.90 - 1.00     [0.823775, 0.957012]       0.892534    CONFIRMED
+
+  Analysis of why hypotheses were wrong for 'healthy' and 'oscillatory_tuning':
+  * Healthy was hypothesized at 0.20 - 0.50 based on literature for stochastic regulatory loops.
+    However, in this dataset, healthy loops have NO measurement noise or unmeasured stochastic
+    disturbance. At steady state, PV = SP exactly. The residual error in unmasked segments is
+    purely deterministic exponential decay from setpoint settling. AR(1) fits it with R2 ~ 1.0,
+    driving innovation variance sigma_a^2 to ~10^-7. Hence minimum variance bound is near 0.
+  * For the same reason, oscillatory_tuning has near-zero random innovation (it is deterministic
+    closed-loop oscillation), so its AR innovations are tiny compared to the cycle variance.
+
+==============================================================================
+[5] NON-STATIONARITY ASSESSMENT FOR sensor_drift
+==============================================================================
+  Linear trend R2 on unmasked demeaned error across loops:
+    healthy             : mean R2 = 0.0160 (range [0.0005, 0.0278])
+    sensor_drift        : mean R2 = 0.0455 (range [0.0433, 0.0520])
+    valve_stiction_v1   : mean R2 = 0.0019 (range [0.0000, 0.0099])
+    valve_stiction_v2   : mean R2 = 0.0076 (range [0.0001, 0.0247])
+    oscillatory_tuning  : mean R2 = 0.0063 (range [0.0000, 0.0310])
+    noise               : mean R2 = 0.0002 (range [0.0000, 0.0009])
+
+  Does non-stationarity make sensor_drift index unreliable?
+  YES. Sensor drift continually increases the baseline offset, creating a non-stationary ramp.
+  The Harris benchmark fundamentally assumes stationary regulatory error driven by white noise.
+  Fitting a stationary AR model to a persistent ramp is misspecified: total variance var_total
+  grows with time, artificially driving I_H to ~10^-7 regardless of true control performance.
+
+==============================================================================
+[6] DEGENERATE CASES CHECK
+==============================================================================
+  Zero loops hit degenerate conditions (0 NaNs across all 60 loops).
+  All loops had sufficient unmasked samples (340 > 35) and non-singular AR regressions.
+
+==============================================================================
+[7] D#4 AS A SEVERITY SCORE & OVERLAP WITH HEALTHY
+==============================================================================
+  Healthy range (delay=3): [0.000000, 0.003486]
+    vs sensor_drift        : [0.000000, 0.000002]  -->  OVERLAPS with healthy
+    vs valve_stiction_v1   : [0.004909, 0.055001]  -->  NO overlap
+    vs valve_stiction_v2   : [0.000000, 0.028545]  -->  OVERLAPS with healthy
+    vs oscillatory_tuning  : [0.000000, 0.000377]  -->  OVERLAPS with healthy
+    vs noise               : [0.823775, 0.957012]  -->  NO overlap
+
+==============================================================================
+[8] OUT-OF-SAMPLE TEST SET: 30 FRESH LOOPS (SEED OFFSET +1000)
+==============================================================================
+
+  Out-of-sample fresh test set (delay=3):
+  fault_type                   mean          min          max          std
+  ----------------------------------------------------
+  healthy                  0.000973     0.000000     0.003209     0.001439
+  sensor_drift             0.000001     0.000000     0.000002     0.000001
+  valve_stiction_v1        0.025068     0.006326     0.055621     0.018872
+  valve_stiction_v2        0.009381     0.000000     0.019048     0.008734
+  oscillatory_tuning       0.000220     0.000003     0.000585     0.000271
+  noise                    0.857837     0.753156     0.937217     0.066259
+
+  Out-of-sample class ordering: noise > valve_stiction_v1 > valve_stiction_v2 > healthy > oscillatory_tuning > sensor_drift
+  Matches labeled-set ordering? YES
+
+==============================================================================
+DONE -- Diagnostic #4 validation complete.
+==============================================================================
+
+================================================================================
+RUNNING: notebooks/06_test_harris_known_answer.py
+================================================================================
+RETURNCODE: 0
+STDOUT:
+==================================================================================
+KNOWN-ANSWER UNIT TESTS: compute_harris_index()
+Theoretical benchmark for AR(1): I_H = 1 - phi^(2d)
+==================================================================================
+
+[TEST 1] Asymptotic convergence: phi=0.9, d=3, N=20,000 (tol = +/-0.02)
+  Expected   : 0.4686 (1 - 0.9^6)
+  Measured   : 0.4855
+  Abs Error  : 0.0170 (tolerance <= 0.0200)
+  Order (AIC): 1
+  Result     : PASS
+
+[TEST 2] Sensitivity to correlation parameter phi (d=3, N=20,000)
+  phi      Expected   Measured    Abs Error    Order   Status
+  ----------------------------------------------------------
+  0.50       0.9844     0.9872       0.0028        2     PASS
+  0.70       0.8824     0.8932       0.0109        2     PASS
+  0.90       0.4686     0.4855       0.0170        1     PASS
+  0.95       0.2649     0.2740       0.0091        2     PASS
+
+[TEST 3] Sensitivity to process delay d (phi=0.9, N=20,000)
+  delay    Expected   Measured    Abs Error    Order   Status
+  ----------------------------------------------------------
+  d=2        0.3439     0.3580       0.0141        1     PASS
+  d=4        0.5695     0.5877       0.0182        1     PASS
+
+[TEST 4] White noise baseline: phi=0.0, d=3, N=20,000
+  Expected   : 1.0000
+  Measured   : 1.0000
+  Abs Error  : 0.0000
+  Order (AIC): 1
+  Result     : PASS
+
+[TEST 5] Realistic length distribution: N=500, phi=0.9, d=3 (200 seeds)
+  Theoretical truth : 0.4686
+  Monte Carlo Mean  : 0.4901 (bias = +0.0215)
+  Monte Carlo Std   : 0.0738
+  Min / Max         : [0.3217, 0.7075]
+  Within +/-0.10    : 81.0% (fraction of runs in [0.3686, 0.5686])
+  Samples retained  : 470 steps per loop (500 - 30 startup settle = 470)
+  Masking on const-SP: OK (no false setpoint triggers)
+  Result            : PASS
+
+[TEST 6] AR order chosen by AIC for pure AR(1) data (N=500, 200 seeds)
+  Mode order chosen : 1 (selected in 55.0% of runs)
+  Orders 1, 2, or 3 : 77.0% of runs
+  Order frequency breakdown:
+    p=1 : 110 runs (55.0%)  ####################################
+    p=2 :  33 runs (16.5%)  ###########
+    p=3 :  11 runs ( 5.5%)  ###
+    p=4 :   7 runs ( 3.5%)  ##
+    p=5 :   8 runs ( 4.0%)  ##
+    p=6 :   3 runs ( 1.5%)  #
+    p=7 :   3 runs ( 1.5%)  #
+    p=8 :   3 runs ( 1.5%)  #
+    p=9 :   4 runs ( 2.0%)  #
+    p=10:   1 runs ( 0.5%)  
+    p=11:   4 runs ( 2.0%)  #
+    p=12:   2 runs ( 1.0%)  
+    p=13:   2 runs ( 1.0%)  
+    p=15:   1 runs ( 0.5%)  
+    p=16:   2 runs ( 1.0%)  
+    p=17:   1 runs ( 0.5%)  
+    p=18:   1 runs ( 0.5%)  
+    p=23:   2 runs ( 1.0%)  
+    p=27:   1 runs ( 0.5%)  
+    p=29:   1 runs ( 0.5%)  
+  Result            : PASS
+
+[TEST 7] Segmented regulatory path & transient blanking (N=500, phi=0.9, d=3, 200 seeds)
+  Theoretical truth         : 0.4686
+  No Transient: Mean=0.5208 (bias=+0.0522), Std=0.0863, Within +/-0.10: 67.5%
+  With Transient: Mean=0.5206 (bias=+0.0521), Std=0.0862, Within +/-0.10: 67.0%
+  Difference due to transient: 0.000115 (matches no-transient: YES)
+  Samples retained per loop : 340 steps (500 - 30 startup - 2x65 step settles = 340)
+  Comparison vs Test 5 (470 steps, const-SP):
+    Test 5 (const SP, 470 steps): Mean=0.4901, Std=0.0738, +/-0.10 fraction=81.0%
+    Test 7 (segmented, 340 steps): Mean=0.5208, Std=0.0863, +/-0.10 fraction=67.5%
+    Result is slightly noisier due to fewer unmasked samples (340 vs 470), as theoretically expected.
+  Result                    : PASS
+
+[TEST 8] Higher AR order: AR(2) with coefficients (1.2, -0.5)
+  Asymptotic (N=20,000):
+    d=3: Expected=0.8974, Measured=0.9021, Abs Error=0.0047 (tol <= 0.02) -> PASS
+    d=5: Expected=0.9799, Measured=0.9783, Abs Error=0.0015 (tol <= 0.02) -> PASS
+  Finite sample (N=500, 200 seeds):
+    d=3: Expected=0.8974, Mean=0.8833 (bias=-0.0141), Std=0.0324 -> PASS
+    d=5: Expected=0.9799, Mean=0.9646 (bias=-0.0152), Std=0.0294 -> PASS
+
+==================================================================================
+PASS / FAIL SUMMARY TABLE
+==================================================================================
+  Test Name                                Expected   Measured  Abs Error   Status
+  --------------------------------------------------------------------------------
+  Test 1: phi=0.9, d=3, N=20k                0.4686     0.4855     0.0170     PASS
+  Test 2: phi=0.50, d=3                      0.9844     0.9872     0.0028     PASS
+  Test 2: phi=0.70, d=3                      0.8824     0.8932     0.0109     PASS
+  Test 2: phi=0.90, d=3                      0.4686     0.4855     0.0170     PASS
+  Test 2: phi=0.95, d=3                      0.2649     0.2740     0.0091     PASS
+  Test 3: phi=0.9, d=2                       0.3439     0.3580     0.0141     PASS
+  Test 3: phi=0.9, d=4                       0.5695     0.5877     0.0182     PASS
+  Test 4: White noise (phi=0)                1.0000     1.0000     0.0000     PASS
+  Test 5: N=500 Monte Carlo (mean)           0.4686     0.4901     0.0215     PASS
+  Test 6: AIC Order Selection (mode=1)       1.0000     1.0000     0.0000     PASS
+  Test 7a: Segmented no transient            0.4686     0.5208     0.0522     PASS
+  Test 7b: Segmented with transient          0.4686     0.5206     0.0521     PASS
+  Test 8a: AR(2), N=20k, d=3                 0.8974     0.9021     0.0047     PASS
+  Test 8b: AR(2), N=20k, d=5                 0.9799     0.9783     0.0015     PASS
+  Test 8c: AR(2), N=500, d=3 (mean)          0.8974     0.8833     0.0141     PASS
+  Test 8d: AR(2), N=500, d=5 (mean)          0.9799     0.9646     0.0152     PASS
+
+==================================================================================
+OVERALL STATUS: ALL TESTS PASSED
+==================================================================================
+
+================================================================================
+RUNNING: notebooks/08_validate_noisy_stress_test.py
+================================================================================
+RETURNCODE: 0
+STDOUT:
+Loaded noisy dataset: 30,000 rows, 60 loops from labeled_loops_noisy.csv
+
+Computing all 4 diagnostics on labeled_loops_noisy.csv...
+
+##################################################################################
+NOISE LEVEL: LOW
+##################################################################################
+
+--- [A] NOISE CHARACTERISTICS & HEALTHY PV STD ---
+  Healthy regulatory PV std      : 0.1600
+  SP Range (ptp)                 : 12.0
+  PV std as fraction of SP range : 1.33%
+
+--- [B] D#1: SETPOINT TRACKING ---
+  fault_type               mean_error    error_slope      r2_linear
+  ----------------------------------------------------------------
+  healthy                      0.1149       0.000959         0.0338
+  sensor_drift                -6.0712      -0.031908         0.8080
+  valve_stiction_v1           -0.3121       0.001667         0.0232
+  valve_stiction_v2            0.0156       0.000498         0.0272
+  oscillatory_tuning          -0.1195      -0.000233         0.0061
+  noise                       -0.0527       0.000427         0.0240
+
+  Separation check:
+    sensor_drift r2_linear range : [0.6659, 0.9256]
+    non-drift r2_linear max      : 0.0618
+    r2_linear gap (drift_min - nondrift_max): +0.6041 (SEPARATES)
+    r2_linear separation ratio   : 23.93x (drift mean 0.8080 vs next-worst 0.0338)
+    False positive drift flags (r2 > 0.50): 0
+
+--- [C] D#2: OSCILLATION DETECTION ---
+  fault_type                    ZCR range        acf_osc range       period range
+  ------------------------------------------------------------------------------
+  healthy                   [3.21, 24.25]     [0.1455, 0.2167]       [18.0, 56.0]
+  sensor_drift              [5.21, 14.83]     [0.1460, 0.3973]       [50.0, 62.0]
+  valve_stiction_v1          [2.20, 8.42]     [0.3360, 0.7238]       [40.0, 58.0]
+  valve_stiction_v2          [2.20, 9.22]     [0.2392, 0.6122]       [50.0, 62.0]
+  oscillatory_tuning       [14.23, 31.06]     [0.3630, 0.8776]       [14.0, 24.0]
+  noise                    [33.87, 44.29]     [0.1940, 0.2554]       [22.0, 62.0]
+
+  D#2 Separation & Overlap analysis:
+    Noise ZCR min: 33.87 | Non-noise ZCR max: 31.06 -> Noise separates cleanly
+    Healthy ZCR: [3.21, 24.25] (Clean was [0.60, 1.00])
+
+--- [D] D#3: VALVE STICTION DETECTION (corr < 0.25 + gate) ---
+  fault_type            flagged expected         op_pv_corr range       result
+  --------------------------------------------------------------------------
+  healthy                     5        0         [0.1174, 0.2051]        FP x5
+  sensor_drift                4        0         [0.1044, 0.3309]        FP x4
+  valve_stiction_v1           5        5         [0.1347, 0.2397]           OK
+  valve_stiction_v2           5        5         [0.0740, 0.1950]           OK
+  oscillatory_tuning          0        0         [0.4537, 0.7056]           OK
+  noise                       0        0         [0.7429, 0.9517]           OK
+
+  Total False Positives: 9
+  Total Misses         : 0
+  op_pv_corr gap: osc_min (0.4537) - stiction_max (0.2397) = +0.2140 (GAP HOLDS (>0))
+
+--- [E] D#4: HARRIS PERFORMANCE INDEX (delay = 3) ---
+  User expectation: Healthy should score moderate to high, faulty classes lower.
+  fault_type                 mean        min        max        std           vs Healthy
+  ------------------------------------------------------------------------
+  healthy                  0.9929     0.9729     1.0000     0.0114             BASELINE
+  sensor_drift             0.0389     0.0141     0.0852     0.0282        LOWER (Clean)
+  valve_stiction_v1        0.3035     0.1502     0.6357     0.1984        LOWER (Clean)
+  valve_stiction_v2        0.3397     0.1392     0.5515     0.2022        LOWER (Clean)
+  oscillatory_tuning       0.7189     0.0641     0.9775     0.3858      LOWER (Overlap)
+  noise                    0.9017     0.8142     1.0000     0.0815      LOWER (Overlap)
+
+  Does Healthy score clearly above faulty classes?
+    Healthy mean (0.9929) vs sensor_drift max (0.0852): ABOVE
+    Healthy mean (0.9929) vs stiction_v1 mean (0.3035): ABOVE
+    Healthy mean (0.9929) vs osc_tuning mean (0.7189): ABOVE
+
+##################################################################################
+NOISE LEVEL: MODERATE
+##################################################################################
+
+--- [A] NOISE CHARACTERISTICS & HEALTHY PV STD ---
+  Healthy regulatory PV std      : 0.5236
+  SP Range (ptp)                 : 11.2
+  PV std as fraction of SP range : 4.68%
+
+--- [B] D#1: SETPOINT TRACKING ---
+  fault_type               mean_error    error_slope      r2_linear
+  ----------------------------------------------------------------
+  healthy                     -0.1331       0.000532         0.0144
+  sensor_drift                -5.7325      -0.033122         0.8280
+  valve_stiction_v1           -0.2202      -0.000701         0.0205
+  valve_stiction_v2           -0.0628       0.002930         0.0382
+  oscillatory_tuning          -0.0001       0.000152         0.0061
+  noise                       -0.3267       0.001574         0.0096
+
+  Separation check:
+    sensor_drift r2_linear range : [0.6696, 0.9204]
+    non-drift r2_linear max      : 0.0607
+    r2_linear gap (drift_min - nondrift_max): +0.6089 (SEPARATES)
+    r2_linear separation ratio   : 21.68x (drift mean 0.8280 vs next-worst 0.0382)
+    False positive drift flags (r2 > 0.50): 0
+
+--- [C] D#2: OSCILLATION DETECTION ---
+  fault_type                    ZCR range        acf_osc range       period range
+  ------------------------------------------------------------------------------
+  healthy                  [22.44, 41.08]     [0.1880, 0.3559]       [12.0, 52.0]
+  sensor_drift              [8.02, 26.45]     [0.1738, 0.3776]       [18.0, 56.0]
+  valve_stiction_v1        [19.64, 33.87]     [0.2574, 0.5530]       [28.0, 60.0]
+  valve_stiction_v2        [20.84, 36.07]     [0.2091, 0.5280]       [42.0, 60.0]
+  oscillatory_tuning       [25.45, 41.48]     [0.3832, 0.8175]       [14.0, 26.0]
+  noise                    [37.07, 45.69]     [0.2375, 0.3397]        [8.0, 62.0]
+
+  D#2 Separation & Overlap analysis:
+    Noise ZCR min: 37.07 | Non-noise ZCR max: 41.48 -> Noise OVERLAPS
+    Healthy ZCR: [22.44, 41.08] (Clean was [0.60, 1.00])
+
+--- [D] D#3: VALVE STICTION DETECTION (corr < 0.25 + gate) ---
+  fault_type            flagged expected         op_pv_corr range       result
+  --------------------------------------------------------------------------
+  healthy                     0        0         [0.5631, 0.8093]           OK
+  sensor_drift                0        0         [0.3995, 0.7506]           OK
+  valve_stiction_v1           0        5         [0.5990, 0.7715]      MISS x5
+  valve_stiction_v2           0        5         [0.5336, 0.6916]      MISS x5
+  oscillatory_tuning          0        0         [0.6306, 0.9795]           OK
+  noise                       0        0         [0.8791, 0.9360]           OK
+
+  Total False Positives: 0
+  Total Misses         : 10
+  op_pv_corr gap: osc_min (0.6306) - stiction_max (0.7715) = -0.1408 (GAP COLLAPSED (OVERLAP))
+
+--- [E] D#4: HARRIS PERFORMANCE INDEX (delay = 3) ---
+  User expectation: Healthy should score moderate to high, faulty classes lower.
+  fault_type                 mean        min        max        std           vs Healthy
+  ------------------------------------------------------------------------
+  healthy                  0.9927     0.9814     1.0000     0.0087             BASELINE
+  sensor_drift             0.2451     0.1021     0.5099     0.1696        LOWER (Clean)
+  valve_stiction_v1        0.8249     0.5966     0.9809     0.1441        LOWER (Clean)
+  valve_stiction_v2        0.8311     0.6046     1.0000     0.1546      LOWER (Overlap)
+  oscillatory_tuning       0.6589     0.2243     0.9134     0.2627        LOWER (Clean)
+  noise                    0.8872     0.8027     1.0000     0.0893      LOWER (Overlap)
+
+  Does Healthy score clearly above faulty classes?
+    Healthy mean (0.9927) vs sensor_drift max (0.5099): ABOVE
+    Healthy mean (0.9927) vs stiction_v1 mean (0.8249): ABOVE
+    Healthy mean (0.9927) vs osc_tuning mean (0.6589): ABOVE
+
+==========================================================================================
+FAILURE SUMMARY TABLE: WHICH THRESHOLDS / SIGNALS FAIL AND BY HOW MUCH
+==========================================================================================
+  Signal / Gate                  Original Design Rule         LOW Noise Status   MODERATE Noise Status
+  ------------------------------------------------------------------------------------------
+  D#1: r2_linear separation      drift min > others max       PASS (+0.60 gap)   PASS (+0.61 gap)
+  D#1: false positive drift      r2 > 0.50 count = 0          PASS (0 FP)        PASS (0 FP)
+  D#2: ZCR noise ceiling         noise min > 30.0             PASS (33.9 > 30)   FAILS (osc max 41.5)
+  D#2: ZCR healthy threshold     healthy max <= 1.3           FAILS (ZCR=24.25)  FAILS (ZCR=41.08)
+  D#2: period osc vs stiction    osc < 25, stiction > 40      PASS (14-24 vs 40-62) PASS (14-26 vs 28-60)
+  D#3: stiction gate (ZCR>1.3)   healthy fails gate           FAILS (5/5 healthy) FAILS (gate passed)
+  D#3: op_pv_corr < 0.25 gap     stiction < 0.25 < osc        PASS (gap +0.21)   FAILS (gap -0.14)
+  D#3: false positive stiction   FP count = 0                 FAILS (9 FP: 5H+4D) PASS (0 FP, but 10 M)
+  D#3: stiction recall           10 / 10 detected             PASS (10/10)       FAILS (0/10, 100% miss)
+  D#4: healthy I_H benchmark     healthy above faults         PASS (0.99 > faults) PASS (0.99 > faults)
+==========================================================================================
+
+================================================================================
+RUNNING: notebooks/10_validate_disturb_dataset.py
+================================================================================
+RETURNCODE: 0
+STDOUT:
+Loaded 15,000 rows, 30 loops from labeled_loops_disturb.csv
+
+================================================================================
+1. D#1: SETPOINT TRACKING (Sensor Drift Separation)
+================================================================================
+fault_type               mean_error    error_slope      r2_linear
+-----------------------------------------------------------------
+healthy                     -0.1156       0.000423         0.0238
+sensor_drift                -5.5054      -0.033516         0.7974
+valve_stiction_v1           -0.1325      -0.000843         0.0240
+valve_stiction_v2            0.3039      -0.000366         0.0058
+oscillatory_tuning          -0.0525       0.000244         0.0060
+noise                        0.0190       0.000510         0.0218
+
+D#1 Separation Summary:
+  sensor_drift r2_linear range : [0.6537, 0.8800]
+  non-drift r2_linear max      : 0.0664
+  r2_linear gap (min - max)    : +0.5874 (SEPARATES)
+  Separation ratio (drift/next): 33.29x
+  False positive drift (r2>0.5): 0
+
+================================================================================
+2. D#2: OSCILLATION DETECTION (Signal Ranges)
+================================================================================
+fault_type                      ZCR range        acf_osc range       period range
+--------------------------------------------------------------------------------
+healthy                      [1.60, 9.82]     [0.2739, 0.5984]       [48.0, 62.0]
+sensor_drift                 [0.80, 4.41]     [0.1525, 0.3645]       [50.0, 62.0]
+valve_stiction_v1            [1.80, 7.41]     [0.4155, 0.6887]       [52.0, 62.0]
+valve_stiction_v2            [1.60, 2.81]     [0.2851, 0.5867]       [58.0, 62.0]
+oscillatory_tuning          [4.41, 11.62]     [0.3787, 0.8761]       [14.0, 24.0]
+noise                      [34.67, 47.49]     [0.1807, 0.2886]       [10.0, 32.0]
+
+D#2 Key Checks:
+  Noise ZCR min (34.67) vs Non-noise max (11.62): SEPARATES
+  Healthy ZCR range: [1.60, 9.82] (Clean was [0.60, 1.00], Low noise was [10.4, 24.3])
+
+================================================================================
+3. D#3: VALVE STICTION DETECTION (corr < 0.25 + gate)
+================================================================================
+fault_type              flagged expected         op_pv_corr range       result
+------------------------------------------------------------------------------
+healthy                       5        0         [0.0269, 0.1521]        FP x5
+sensor_drift                  4        0        [-0.0068, 0.1098]        FP x4
+valve_stiction_v1             5        5         [0.0451, 0.1076]           OK
+valve_stiction_v2             5        5         [0.0321, 0.1147]           OK
+oscillatory_tuning            0        0         [0.4044, 0.6770]           OK
+noise                         0        0         [0.6797, 0.9906]           OK
+
+D#3 Summary:
+  Total False Positives: 9
+  Total Misses         : 0
+  op_pv_corr gap: osc_min (0.4044) - stict_max (0.1147) = +0.2896 (GAP HOLDS)
+
+D#3 Stiction loop details:
+  Loop  1 (healthy           ): flag=1, osc_gate=N/A, corr=0.0954
+  Loop  2 (healthy           ): flag=1, osc_gate=N/A, corr=0.0373
+  Loop  3 (healthy           ): flag=1, osc_gate=N/A, corr=0.1205
+  Loop  4 (healthy           ): flag=1, osc_gate=N/A, corr=0.1521
+  Loop  5 (healthy           ): flag=1, osc_gate=N/A, corr=0.0269
+  Loop  6 (sensor_drift      ): flag=1, osc_gate=N/A, corr=0.0897
+  Loop  7 (sensor_drift      ): flag=1, osc_gate=N/A, corr=0.0151
+  Loop  8 (sensor_drift      ): flag=1, osc_gate=N/A, corr=0.1098
+  Loop  9 (sensor_drift      ): flag=1, osc_gate=N/A, corr=-0.0068
+  Loop 10 (sensor_drift      ): flag=0, osc_gate=N/A, corr=0.0254
+  Loop 11 (valve_stiction_v1 ): flag=1, osc_gate=N/A, corr=0.0866
+  Loop 12 (valve_stiction_v1 ): flag=1, osc_gate=N/A, corr=0.0451
+  Loop 13 (valve_stiction_v1 ): flag=1, osc_gate=N/A, corr=0.1076
+  Loop 14 (valve_stiction_v1 ): flag=1, osc_gate=N/A, corr=0.0809
+  Loop 15 (valve_stiction_v1 ): flag=1, osc_gate=N/A, corr=0.0617
+  Loop 16 (valve_stiction_v2 ): flag=1, osc_gate=N/A, corr=0.0833
+  Loop 17 (valve_stiction_v2 ): flag=1, osc_gate=N/A, corr=0.0321
+  Loop 18 (valve_stiction_v2 ): flag=1, osc_gate=N/A, corr=0.1147
+  Loop 19 (valve_stiction_v2 ): flag=1, osc_gate=N/A, corr=0.0327
+  Loop 20 (valve_stiction_v2 ): flag=1, osc_gate=N/A, corr=0.0377
+  Loop 21 (oscillatory_tuning): flag=0, osc_gate=N/A, corr=0.4657
+  Loop 22 (oscillatory_tuning): flag=0, osc_gate=N/A, corr=0.4044
+  Loop 23 (oscillatory_tuning): flag=0, osc_gate=N/A, corr=0.6770
+  Loop 24 (oscillatory_tuning): flag=0, osc_gate=N/A, corr=0.4089
+  Loop 25 (oscillatory_tuning): flag=0, osc_gate=N/A, corr=0.5351
+
+================================================================================
+4. D#4: HARRIS PERFORMANCE INDEX (delay = 3)
+================================================================================
+fault_type                   mean        min        max        std
+-----------------------------------------------------------------
+healthy                    0.3790     0.2934     0.4917     0.1011
+sensor_drift               0.0113     0.0045     0.0240     0.0076
+valve_stiction_v1          0.1007     0.0326     0.2221     0.0769
+valve_stiction_v2          0.0667     0.0346     0.1124     0.0313
+oscillatory_tuning         0.4979     0.0131     0.8818     0.3305
+noise                      0.8839     0.7999     0.9831     0.0776
+
+D#4 Benchmark Status:
+  Healthy mean (0.3790) vs sensor_drift max (0.0240): ABOVE
+  Healthy mean (0.3790) vs stiction mean (0.0837): ABOVE
+  Healthy mean (0.3790) vs osc_tuning mean (0.4979): OVERLAP
+
+================================================================================
+RUNNING: notebooks/11_validate_stiction_v2.py
+================================================================================
+RETURNCODE: 0
+STDOUT:
+===============================================================================================
+VALIDATION: STICTION DETECTION OLD (v1) vs NEW (v2) ON 4 DESIGN SETS
+===============================================================================================
+
+##########################################################################################
+REGIME: CLEAN (60 loops)
+##########################################################################################
+
+--- OLD (v1) ---
+  fault_type            flagged expected        FP/Miss loop IDs
+  ---------------------------------------------------------------------------
+  healthy                     0        0      OK (0 FP)  -
+  sensor_drift                0        0      OK (0 FP)  -
+  valve_stiction_v1           9       10        MISS x1  Missed: [29]
+  valve_stiction_v2           4       10        MISS x6  Missed: [32, 34, 35, 36, 37, 39]
+  oscillatory_tuning          0        0      OK (0 FP)  -
+  noise                       0        0      OK (0 FP)  -
+  ---------------------------------------------------------------------------
+  SUMMARY OLD (v1)  : Total FP = 0   (IDs: []) | Stiction Recall = 13/20 (Miss IDs: [29, 32, 34, 35, 36, 37, 39])
+
+--- NEW (v2) ---
+  fault_type            flagged expected        FP/Miss loop IDs
+  ---------------------------------------------------------------------------
+  healthy                     1        0          FP x1  Flagged FP: [2]
+  sensor_drift                0        0      OK (0 FP)  -
+  valve_stiction_v1           9       10        MISS x1  Missed: [23]
+  valve_stiction_v2          10       10      OK (100%)  Flagged: [31, 32, 33, 34, 35, 36, 37, 38, 39, 40]
+  oscillatory_tuning          0        0      OK (0 FP)  -
+  noise                       0        0      OK (0 FP)  -
+  ---------------------------------------------------------------------------
+  SUMMARY NEW (v2)  : Total FP = 1   (IDs: [2]) | Stiction Recall = 19/20 (Miss IDs: [23])
+
+##########################################################################################
+REGIME: LOW (30 loops)
+##########################################################################################
+
+--- OLD (v1) ---
+  fault_type            flagged expected        FP/Miss loop IDs
+  ---------------------------------------------------------------------------
+  healthy                     5        0          FP x5  Flagged FP: [1, 2, 3, 4, 5]
+  sensor_drift                4        0          FP x4  Flagged FP: [6, 7, 8, 10]
+  valve_stiction_v1           5        5      OK (100%)  Flagged: [11, 12, 13, 14, 15]
+  valve_stiction_v2           5        5      OK (100%)  Flagged: [16, 17, 18, 19, 20]
+  oscillatory_tuning          0        0      OK (0 FP)  -
+  noise                       0        0      OK (0 FP)  -
+  ---------------------------------------------------------------------------
+  SUMMARY OLD (v1)  : Total FP = 9   (IDs: [1, 2, 3, 4, 5, 6, 7, 8, 10]) | Stiction Recall = 10/10 (Miss IDs: [])
+
+--- NEW (v2) ---
+  fault_type            flagged expected        FP/Miss loop IDs
+  ---------------------------------------------------------------------------
+  healthy                     0        0      OK (0 FP)  -
+  sensor_drift                0        0      OK (0 FP)  -
+  valve_stiction_v1           5        5      OK (100%)  Flagged: [11, 12, 13, 14, 15]
+  valve_stiction_v2           5        5      OK (100%)  Flagged: [16, 17, 18, 19, 20]
+  oscillatory_tuning          0        0      OK (0 FP)  -
+  noise                       0        0      OK (0 FP)  -
+  ---------------------------------------------------------------------------
+  SUMMARY NEW (v2)  : Total FP = 0   (IDs: []) | Stiction Recall = 10/10 (Miss IDs: [])
+
+##########################################################################################
+REGIME: MODERATE (30 loops)
+##########################################################################################
+
+--- OLD (v1) ---
+  fault_type            flagged expected        FP/Miss loop IDs
+  ---------------------------------------------------------------------------
+  healthy                     0        0      OK (0 FP)  -
+  sensor_drift                0        0      OK (0 FP)  -
+  valve_stiction_v1           0        5        MISS x5  Missed: [41, 42, 43, 44, 45]
+  valve_stiction_v2           0        5        MISS x5  Missed: [46, 47, 48, 49, 50]
+  oscillatory_tuning          0        0      OK (0 FP)  -
+  noise                       0        0      OK (0 FP)  -
+  ---------------------------------------------------------------------------
+  SUMMARY OLD (v1)  : Total FP = 0   (IDs: []) | Stiction Recall = 0/10 (Miss IDs: [41, 42, 43, 44, 45, 46, 47, 48, 49, 50])
+
+--- NEW (v2) ---
+  fault_type            flagged expected        FP/Miss loop IDs
+  ---------------------------------------------------------------------------
+  healthy                     0        0      OK (0 FP)  -
+  sensor_drift                0        0      OK (0 FP)  -
+  valve_stiction_v1           3        5        MISS x2  Missed: [41, 43]
+  valve_stiction_v2           4        5        MISS x1  Missed: [48]
+  oscillatory_tuning          0        0      OK (0 FP)  -
+  noise                       0        0      OK (0 FP)  -
+  ---------------------------------------------------------------------------
+  SUMMARY NEW (v2)  : Total FP = 0   (IDs: []) | Stiction Recall = 7/10 (Miss IDs: [41, 43, 48])
+
+##########################################################################################
+REGIME: DISTURBANCE (30 loops)
+##########################################################################################
+
+--- OLD (v1) ---
+  fault_type            flagged expected        FP/Miss loop IDs
+  ---------------------------------------------------------------------------
+  healthy                     5        0          FP x5  Flagged FP: [1, 2, 3, 4, 5]
+  sensor_drift                4        0          FP x4  Flagged FP: [6, 7, 8, 9]
+  valve_stiction_v1           5        5      OK (100%)  Flagged: [11, 12, 13, 14, 15]
+  valve_stiction_v2           5        5      OK (100%)  Flagged: [16, 17, 18, 19, 20]
+  oscillatory_tuning          0        0      OK (0 FP)  -
+  noise                       0        0      OK (0 FP)  -
+  ---------------------------------------------------------------------------
+  SUMMARY OLD (v1)  : Total FP = 9   (IDs: [1, 2, 3, 4, 5, 6, 7, 8, 9]) | Stiction Recall = 10/10 (Miss IDs: [])
+
+--- NEW (v2) ---
+  fault_type            flagged expected        FP/Miss loop IDs
+  ---------------------------------------------------------------------------
+  healthy                     5        0          FP x5  Flagged FP: [1, 2, 3, 4, 5]
+  sensor_drift                0        0      OK (0 FP)  -
+  valve_stiction_v1           5        5      OK (100%)  Flagged: [11, 12, 13, 14, 15]
+  valve_stiction_v2           5        5      OK (100%)  Flagged: [16, 17, 18, 19, 20]
+  oscillatory_tuning          0        0      OK (0 FP)  -
+  noise                       0        0      OK (0 FP)  -
+  ---------------------------------------------------------------------------
+  SUMMARY NEW (v2)  : Total FP = 5   (IDs: [1, 2, 3, 4, 5]) | Stiction Recall = 10/10 (Miss IDs: [])
+
+================================================================================
+RUNNING: notebooks/13_evaluate_fresh2000.py
+================================================================================
+RETURNCODE: 0
+STDOUT:
+===============================================================================================
+ONE-TIME EVALUATION: STICTION DETECTION v2 ON FRESH-SEED (+2000) TEST SETS
+===============================================================================================
+
+##########################################################################################
+REGIME: CLEAN FRESH (30 loops)
+##########################################################################################
+  fault_type            flagged expected        FP/Miss loop IDs
+  ---------------------------------------------------------------------------
+  healthy                     1        0          FP x1  Flagged FP: [2]
+  sensor_drift                0        0      OK (0 FP)  -
+  valve_stiction_v1           4        5        MISS x1  Missed: [13]
+  valve_stiction_v2           5        5      OK (100%)  Flagged: [16, 17, 18, 19, 20]
+  oscillatory_tuning          0        0      OK (0 FP)  -
+  noise                       0        0      OK (0 FP)  -
+  ---------------------------------------------------------------------------
+  SUMMARY: Total FP = 1   (IDs: [2]) | Stiction Recall = 9/10 (Miss IDs: [13])
+
+##########################################################################################
+REGIME: LOW NOISE FRESH (30 loops)
+##########################################################################################
+  fault_type            flagged expected        FP/Miss loop IDs
+  ---------------------------------------------------------------------------
+  healthy                     1        0          FP x1  Flagged FP: [2]
+  sensor_drift                0        0      OK (0 FP)  -
+  valve_stiction_v1           4        5        MISS x1  Missed: [11]
+  valve_stiction_v2           5        5      OK (100%)  Flagged: [16, 17, 18, 19, 20]
+  oscillatory_tuning          0        0      OK (0 FP)  -
+  noise                       0        0      OK (0 FP)  -
+  ---------------------------------------------------------------------------
+  SUMMARY: Total FP = 1   (IDs: [2]) | Stiction Recall = 9/10 (Miss IDs: [11])
+
+##########################################################################################
+REGIME: MODERATE NOISE FRESH (30 loops)
+##########################################################################################
+  fault_type            flagged expected        FP/Miss loop IDs
+  ---------------------------------------------------------------------------
+  healthy                     0        0      OK (0 FP)  -
+  sensor_drift                0        0      OK (0 FP)  -
+  valve_stiction_v1           3        5        MISS x2  Missed: [41, 43]
+  valve_stiction_v2           2        5        MISS x3  Missed: [46, 47, 48]
+  oscillatory_tuning          0        0      OK (0 FP)  -
+  noise                       0        0      OK (0 FP)  -
+  ---------------------------------------------------------------------------
+  SUMMARY: Total FP = 0   (IDs: []) | Stiction Recall = 5/10 (Miss IDs: [41, 43, 46, 47, 48])
+
+##########################################################################################
+REGIME: DISTURBANCE FRESH (30 loops)
+##########################################################################################
+  fault_type            flagged expected        FP/Miss loop IDs
+  ---------------------------------------------------------------------------
+  healthy                     4        0          FP x4  Flagged FP: [1, 2, 3, 5]
+  sensor_drift                0        0      OK (0 FP)  -
+  valve_stiction_v1           5        5      OK (100%)  Flagged: [11, 12, 13, 14, 15]
+  valve_stiction_v2           5        5      OK (100%)  Flagged: [16, 17, 18, 19, 20]
+  oscillatory_tuning          0        0      OK (0 FP)  -
+  noise                       0        0      OK (0 FP)  -
+  ---------------------------------------------------------------------------
+  SUMMARY: Total FP = 4   (IDs: [1, 2, 3, 5]) | Stiction Recall = 10/10 (Miss IDs: [])

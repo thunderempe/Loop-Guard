@@ -1,0 +1,27 @@
+# Large TEP data files
+*.RData
+*.rdata
+data/tep/
+
+# Virtual environment
+venv/
+.venv/
+env/
+ENV/
+
+# Python cache and bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+*-checkpoint.ipynb
+
+# IDE & OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
