@@ -25,3 +25,8 @@ __pycache__/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Scratch data and cache files
+scratch/tep_cache_ff_train.pkl
+scratch/tep_faulty_train_subset.csv.gz
+scratch/tep_fault_effects.pkl
