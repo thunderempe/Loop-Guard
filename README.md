@@ -36,6 +36,25 @@ Evaluated on the four design sets and tested out-of-sample on fresh-seed (+2000)
 
 ---
 
+### Phase 3: TEP Validation (Reactor Temp Loop)
+
+Evaluated on the Tennessee Eastman Process (TEP) benchmark for the Reactor Temperature loop (`xmv_10` cooling water OP, `xmeas_9` temperature PV). Candidate faults evaluated: Fault 14, Fault 11, and Fault 4 alongside Healthy baseline runs. Rules were calibrated exclusively on the development split (runs 1 to 50) and frozen in `scratch/part_c_frozen_rules.md` before a single evaluation on the report split (runs 51 to 100, 50 runs per class):
+
+| Diagnostic / Detector | Rule / Threshold Applied | Healthy (False Alarms) | Fault 14 (Detection) | Fault 11 (Detection) | Fault 4 (Detection) |
+| :--- | :--- | :---: | :---: | :---: | :---: |
+| **D#4 (Harris Index)** | $I_H(d=1) < 0.50$ | **0 / 50 (0%)** | **50 / 50 (100%)** | **50 / 50 (100%)** | **0 / 50 (0%)** |
+| **Adapted D#2 (Oscillation)** | $\text{ACF} \ge 0.55 \text{ or } (\text{ZCR} \le 30 \text{ and } \text{ACF} \ge 0.35)$ | **1 / 50 (2%)** | **50 / 50 (100%)** | **50 / 50 (100%)** | **0 / 50 (0%)** |
+| **D#3 v2 (Unmodified Stiction)** | Default Phase 2 thresholds ($R^2 < 0.4, \text{ZCR} < 30, T \ge 35, \text{corr} < 0.5$) | **0 / 50 (0%)** | **0 / 50 (0%)** | **2 / 50 (4%)** | **0 / 50 (0%)** |
+| **Period-2 Chatter Detector** | $\text{ZCR} \ge 80 \text{ and } T = 2.0 \text{ and } \text{ACF} \ge 0.80$ | **0 / 50 (0%)** | **50 / 50 (100%)** | **0 / 50 (0%)** | **0 / 50 (0%)** |
+
+- **D#3 v2 Status:** D#3 v2 is **NOT validated on TEP** because its $\text{ZCR} < 30$ gate blocks this loop, whose healthy baseline ZCR is $\approx 52$. The 2 flags on Fault 11 are not true detections of stiction.
+- **Period-2 Chatter Detector:** Detected Fault 14 at 50/50 (100%), but it was designed from Fault 14 development data; it is an empirical fingerprint, not a validation of D#3.
+- **Fault 4:** Not detected by any diagnostic (0/50); PV-based diagnostics did not detect it.
+- **Caveats:** Development and report splits come from the same TEP simulation, so this shows stability across seeds, not generalization across plants. D#1 has no TEP ground truth because none of the 20 TEP faults is a sensor drift. Only one loop was tested. Fault 14 is labelled valve sticking in the TEP documentation, but the data show fast alternation (period 2), not classic stick-slip, and this was not checked against the simulator source.
+- **Lesson:** Fixed thresholds from simulated data did not transfer to TEP (the healthy baseline differs, for example ZCR 52 vs the simulated regimes), so thresholds need per-loop calibration.
+
+---
+
 ### Known Limitations
 
 1. **Suspected Stiction False Positives Under Dominant Load Disturbance:**  
