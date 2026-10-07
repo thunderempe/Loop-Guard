@@ -4,9 +4,10 @@ Renders a lightweight, interactive-free Three.js animation of a PID control loop
 Features:
 - Pinned Three.js r128 from cdnjs
 - 5 labeled nodes: Setpoint -> Controller -> Valve -> Process -> Sensor
+- High-res crisp label sprites with dark rounded pill backgrounds
 - Glowing travel pulses and periodic fault detection flicker
 - Capped pixel ratio (2x), paused when tab is hidden, prefers-reduced-motion support
-- Responsive camera fitting bounding sphere with margin for full rotation and drift
+- Responsive camera fitting bounding sphere tightly (~6% margin) for full frame fill
 - Instant static fallback diagram if WebGL/CDN is unavailable
 """
 
@@ -141,29 +142,29 @@ var nodeColors = [0x38bdf8, 0x38bdf8, 0x10b981, 0xf59e0b, 0x6366f1];
 var isPaused = false;
 var animId = null;
 
-var spriteRadialFactor = 1.32;
-var spriteHalfWidth = 0.7;
-var spriteY = 0.38;
-var spriteHalfHeight = 0.175;
+var spriteRadialFactor = 1.24;
+var spriteHalfWidth = 1.05;
+var spriteY = 0.35;
+var spriteHalfHeight = 0.2625;
 var spriteMaxR = Math.sqrt(Math.pow(radius * spriteRadialFactor + spriteHalfWidth, 2) + Math.pow(spriteY + spriteHalfHeight, 2));
 var nodeSphereRadius = 0.18;
 var nodeMaxR = radius + nodeSphereRadius;
 var boundingRadius = Math.max(spriteMaxR, nodeMaxR);
-var marginFactor = 1.15;
+var marginFactor = 1.06;
 var effectiveRadius = boundingRadius * marginFactor;
 
 var driftX = 0.25;
 var driftY = 0.15;
 var maxDrift = Math.sqrt(driftX * driftX + driftY * driftY);
 var camPitch = Math.atan2(2.2, 5.8);
-var camDistance = 13.0;
+var camDistance = 12.5;
 var camY0 = camDistance * Math.sin(camPitch);
 var camZ0 = camDistance * Math.cos(camPitch);
 
 function updateDimensions() {
 if (!container || !camera || !renderer) return;
 var width = container.clientWidth || window.innerWidth || 800;
-var height = container.clientHeight || window.innerHeight || 460;
+var height = container.clientHeight || window.innerHeight || 500;
 var aspect = width / height;
 camera.aspect = aspect;
 var vHalfTan = Math.tan((camera.fov * Math.PI) / 360);
@@ -210,26 +211,26 @@ nodeMesh.position.set(x, 0, z);
 loopGroup.add(nodeMesh);
 nodeMeshes.push(nodeMesh);
 var canvas = document.createElement("canvas");
-canvas.width = 256;
-canvas.height = 64;
+canvas.width = 512;
+canvas.height = 128;
 var ctx = canvas.getContext("2d");
-ctx.clearRect(0, 0, 256, 64);
-ctx.fillStyle = "rgba(15, 23, 42, 0.75)";
-ctx.roundRect ? ctx.roundRect(8, 8, 240, 48, 8) : ctx.rect(8, 8, 240, 48);
+ctx.clearRect(0, 0, 512, 128);
+ctx.fillStyle = "rgba(15, 23, 42, 0.85)";
+ctx.roundRect ? ctx.roundRect(16, 16, 480, 96, 20) : ctx.rect(16, 16, 480, 96);
 ctx.fill();
-ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";
-ctx.lineWidth = 2;
+ctx.strokeStyle = "rgba(255, 255, 255, 0.22)";
+ctx.lineWidth = 3;
 ctx.stroke();
-ctx.font = "bold 22px -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif";
-ctx.fillStyle = "#f8fafc";
+ctx.font = "bold 40px -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif";
+ctx.fillStyle = "#ffffff";
 ctx.textAlign = "center";
 ctx.textBaseline = "middle";
-ctx.fillText(nodeNames[i], 128, 32);
+ctx.fillText(nodeNames[i], 256, 64);
 var texture = new THREE.CanvasTexture(canvas);
 var spriteMat = new THREE.SpriteMaterial({ map: texture, transparent: true });
 var sprite = new THREE.Sprite(spriteMat);
 sprite.position.set(x * spriteRadialFactor, spriteY, z * spriteRadialFactor);
-sprite.scale.set(1.4, 0.35, 1);
+sprite.scale.set(2.1, 0.525, 1);
 loopGroup.add(sprite);
 }
 
