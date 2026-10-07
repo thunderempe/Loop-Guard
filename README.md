@@ -60,8 +60,8 @@ Loop Guard runs four automated diagnostic checks:
   Built four diagnostic modules (`src/diagnostics.py`). Proved D#4 with an 8-test known-answer unit suite against closed-form theoretical equations. Stress-tested the diagnostics under realistic field conditions (clean, low noise, moderate noise, and colored load disturbances). Diagnosed where initial rules broke under noise, created Stiction Detection v2 with a low-pass moving-average filter, and verified generalization out-of-sample on 120 loops generated with fresh random seeds (+2000 offset).
 * **Phase 3: Benchmark Validation on TEP Industrial Simulation**  
   Extracted and evaluated the critical Reactor Temperature loop (`xmv_10` cooling water valve, `xmeas_9` reactor temperature) from the Tennessee Eastman Process. Calibrated decision thresholds exclusively on development runs 1 to 50 (frozen in `scratch/part_c_frozen_rules.md`) and executed a strict single evaluation on unseen report runs 51 to 100 across Faults 14, 11, 4, and healthy baselines.
-* **Phase 4: Operator Triage Dashboard (Planned / Coming Next)**  
-  A lightweight interactive Streamlit dashboard allowing plant engineers to upload plant historian CSV files, view plant-wide traffic-light health scores, and drill into specific loop diagnostics. *(This phase is planned and not yet built).*
+* **Phase 4: Operator Triage Dashboard (Built - v1)**  
+  Built an interactive Streamlit web application (`app/streamlit_app.py`) allowing control engineers to triage loops. Includes a multi-loop overview with red/yellow/green status badges, single-loop drill-down with time-series and phase-plane plots, diagnostic explanations, CSV loop upload validation, and demonstration suites for both synthetic and TEP benchmark loops.
 
 ---
 
@@ -122,8 +122,8 @@ Evaluated on the Tennessee Eastman Process (TEP) benchmark for the Reactor Tempe
    Phase 3 validation was performed exclusively on the Reactor Temperature loop (`xmv_10` / `xmeas_9`). Multi-loop plant-wide interactions have not yet been evaluated.
 6. **TEP Rules Required Hand Adaptation:**  
    Unmodified Phase 2 thresholds did not transfer out-of-the-box to TEP due to baseline shift. The reported Phase 3 rules had to be calibrated on development runs 1 to 50 before being evaluated once on runs 51 to 100.
-7. **Phase 4 Dashboard Not Yet Built:**  
-   The Streamlit graphical user interface is currently a planned design and has not yet been implemented.
+7. **Dashboard Scope (v1 Built, Not Connected to Live Plant Historian Streams):**  
+   The Phase 4 Streamlit dashboard is built (v1: overview, drill-down, about page, CSV upload, TEP demo) for offline file-based analysis. It does not yet connect directly to live distributed control system (DCS) protocols or process multi-loop wide CSV files in batch.
 
 ---
 
@@ -243,12 +243,13 @@ Loop Guard/
 
 ---
 
-## What's Next
+## What's Next (Dashboard v2 & Future Work)
 
-* **Phase 4: Streamlit Triage Dashboard (Planned):**  
-  Build an interactive web application allowing control engineers to:
-  1. Drag and drop plant historian CSV files containing `SP`, `PV`, and `OP`.
-  2. View an overview table of all loops categorized with red/yellow/green health status badges.
-  3. Click into any loop to inspect time-series overlays, detrended zero-crossing plots, sliding-window ACF curves, and $|\Delta \text{OP}|$ vs. $|\Delta \text{PV}|$ phase planes.
+* **Multi-Loop Batch CSV Ingestion:**  
+  Support uploading wide-format plant historian exports containing dozens of loops simultaneously, auto-grouping by tag name prefixes.
+* **Automated Process Delay Estimator:**  
+  Automatically estimate loop dead time $d$ via cross-correlation between OP and PV, eliminating manual delay selection.
 * **Per-Loop Baseline Auto-Calibration:**  
   Implement unsupervised baseline learning (e.g., using normal operating periods) to automatically adjust zero-crossing and ACF thresholds to each loop's natural noise level, eliminating manual threshold tuning.
+* **Shift Handover Report Export:**  
+  One-click generation of printable summary reports and executive summaries for engineering shift handovers.

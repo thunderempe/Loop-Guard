@@ -265,9 +265,9 @@ if nav_choice == "Overview":
             b_perf = make_badge(res["d4_flag"], "Performance")
 
             true_fault_text = ""
-            if reveal_faults and "true_fault_type" in loop_df.columns:
+            if (reveal_faults or active_ruleset == "tep") and "true_fault_type" in loop_df.columns:
                 tf = loop_df["true_fault_type"].iloc[0]
-                true_fault_text = f"&nbsp;&nbsp;<span style='color: #6c757d; font-size: 0.85rem;'>[True Label: <b>{tf}</b>]</span>"
+                true_fault_text = f"&nbsp;&nbsp;<span style='color: #6c757d; font-size: 0.85rem;'>[Label: <b>{tf}</b>]</span>"
 
             # Render card container
             with st.container():
@@ -291,6 +291,13 @@ if nav_choice == "Overview":
                     """,
                     unsafe_allow_html=True,
                 )
+
+                if "Fault 4" in loop_name:
+                    st.info(
+                        "Note on Fault 4: The feedback PI controller absorbed the cooling water inlet temperature step "
+                        "by shifting valve command OP (+6.9 sigma), keeping reactor temperature PV unchanged. "
+                        "Because PV tracking remained undisturbed, PV-based error checks show healthy (green)."
+                    )
 
                 col_btn, _ = st.columns([2, 8])
                 with col_btn:
@@ -336,8 +343,17 @@ elif nav_choice == "Loop Drill-down":
             st.error(f"**Health Assessment:** {headline}")
 
         # True fault label if revealed
-        if reveal_faults and "true_fault_type" in ldf.columns:
+        if (reveal_faults or active_ruleset == "tep") and "true_fault_type" in ldf.columns:
             st.caption(f"Ground truth demonstration label: **{ldf['true_fault_type'].iloc[0]}**")
+
+        if "Fault 4" in selected_loop:
+            st.info(
+                "Physical Context: Fault 4 is an inlet cooling temperature step disturbance. "
+                "The feedback PI controller successfully absorbed it by shifting valve position OP by +6.9 sigma, "
+                "maintaining reactor temperature PV at target (0 sigma deviation). "
+                "Because PV tracking remained undisturbed, PV-based error diagnostics show healthy (green). "
+                "Detecting disturbances absorbed by control action requires monitoring valve OP shifts, not error metrics alone."
+            )
 
         st.markdown("### Operational Time-Series")
 
