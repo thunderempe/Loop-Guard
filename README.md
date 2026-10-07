@@ -122,8 +122,8 @@ Evaluated on the Tennessee Eastman Process (TEP) benchmark for the Reactor Tempe
    Phase 3 validation was performed exclusively on the Reactor Temperature loop (`xmv_10` / `xmeas_9`). Multi-loop plant-wide interactions have not yet been evaluated.
 6. **TEP Rules Required Hand Adaptation:**  
    Unmodified Phase 2 thresholds did not transfer out-of-the-box to TEP due to baseline shift. The reported Phase 3 rules had to be calibrated on development runs 1 to 50 before being evaluated once on runs 51 to 100.
-7. **Dashboard Scope (v1.1 Built, Not Connected to Live Plant Historian Streams):**  
-   The Phase 4 Streamlit dashboard is built (v1.1: overview cards with one-line plain summaries, drill-down with technician suggestions and fault knowledge base, dark theme visual polish, CSV upload, TEP demo) for offline file-based analysis. It does not yet connect directly to live distributed control system (DCS) protocols or process multi-loop wide CSV files in batch.
+7. **Dashboard Scope (v1.2 Built, Not Connected to Live Plant Historian Streams):**  
+   The Phase 4 Streamlit dashboard is built (v1.2: Intro landing page with 3D closed-loop animation, overview cards with one-line plain summaries, drill-down with technician suggestions and fault knowledge base, dark theme visual polish, CSV upload, TEP demo) for offline file-based analysis. It does not yet connect directly to live distributed control system (DCS) protocols or process multi-loop wide CSV files in batch.
 
 ---
 
@@ -206,6 +206,7 @@ streamlit run app/streamlit_app.py
 Loop Guard/
 ├── app/                                 # Streamlit operator dashboard (Phase 4)
 │   ├── helpers.py                       # Data loading, validation, and diagnostic execution
+│   ├── intro_scene.py                   # 3D closed-loop animation scene and static fallback
 │   └── streamlit_app.py                 # Multi-page dashboard interface
 ├── data/
 │   ├── simulated/                       # Synthetic labeled loop CSV datasets

@@ -10,6 +10,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import streamlit as st
+import streamlit.components.v1 as components
 
 # Ensure project root is in Python sys.path
 ROOT_DIR = Path(__file__).resolve().parent.parent
@@ -28,6 +29,7 @@ from app.helpers import (
     render_html,
     SUGGESTION_DISCLAIMER,
 )
+from app.intro_scene import build_intro_scene_html
 
 # -----------------------------------------------------------------------------
 # App Configuration & Theme
@@ -170,23 +172,31 @@ render_html(
 st.sidebar.title("🛡️ Loop Guard")
 st.sidebar.caption("Automated PID Loop Diagnostics")
 
+nav_options = ["Intro", "Overview", "Loop Drill-down", "About & Limits"]
+if "nav_radio" not in st.session_state:
+    st.session_state.nav_radio = "Intro"
+
 nav_choice = st.sidebar.radio(
     "Navigation",
-    ["Overview", "Loop Drill-down", "About & Limits"],
-    index=0,
+    nav_options,
+    key="nav_radio",
 )
 
 st.sidebar.markdown("---")
 st.sidebar.subheader("Data Source")
 
+data_source_options = [
+    "Demo: simulated loops",
+    "Demo: TEP Reactor Temperature",
+    "Upload your own loop CSV",
+]
+if "data_source_select" not in st.session_state:
+    st.session_state.data_source_select = "Demo: simulated loops"
+
 data_source = st.sidebar.selectbox(
     "Select Input Source",
-    [
-        "Demo: simulated loops",
-        "Demo: TEP Reactor Temperature",
-        "Upload your own loop CSV",
-    ],
-    index=0,
+    data_source_options,
+    key="data_source_select",
 )
 
 # Reveal true fault toggle for simulated demo
@@ -260,9 +270,95 @@ if "selected_loop_name" not in st.session_state or st.session_state.selected_loo
 
 
 # -----------------------------------------------------------------------------
+# PAGE 0: INTRO (LANDING PAGE)
+# -----------------------------------------------------------------------------
+if nav_choice == "Intro":
+    st.title("Loop Guard")
+    st.caption("A health check for the control loops that keep a plant running.")
+
+    # 3D Loop Animation Scene
+    components.html(build_intro_scene_html(), height=420)
+
+    # Call to action buttons
+    col_b1, col_b2 = st.columns(2)
+    with col_b1:
+        if st.button("Explore the demo", type="primary", key="btn_intro_demo", use_container_width=True):
+            st.session_state.nav_radio = "Overview"
+            st.session_state.data_source_select = "Demo: simulated loops"
+            st.rerun()
+    with col_b2:
+        if st.button("Try your own loop data", key="btn_intro_upload", use_container_width=True):
+            st.session_state.nav_radio = "Overview"
+            st.session_state.data_source_select = "Upload your own loop CSV"
+            st.rerun()
+
+    st.markdown("---")
+
+    st.markdown("### The Problem")
+    st.markdown(
+        textwrap.dedent(
+            """
+            Imagine driving a car where the cruise control slowly decalibrates, the accelerator pedal gets sticky, or the engine constantly surges back and forth.
+            In an industrial plant, thousands of automated PID control loops adjust valves and pumps to keep temperatures, pressures, and flows steady.
+            When these loops degrade unnoticed, they quietly waste utility energy, accelerate mechanical wear, and risk sudden shutdowns.
+            """
+        )
+    )
+
+    st.markdown("### What Loop Guard Does")
+    c1, c2 = st.columns(2)
+    with c1:
+        card_d1 = """
+        <div class='metric-box'>
+            <div style='font-size: 1.05rem; font-weight: 700; color: #f8fafc; margin-bottom: 6px;'>🧭 Sensor Drift</div>
+            <div style='color: #cbd5e1; font-size: 0.90rem;'>Spots sensors slowly wandering away from their true target.</div>
+        </div>
+        """
+        render_html(card_d1)
+
+        card_d3 = """
+        <div class='metric-box'>
+            <div style='font-size: 1.05rem; font-weight: 700; color: #f8fafc; margin-bottom: 6px;'>⚙️ Valve Stiction</div>
+            <div style='color: #cbd5e1; font-size: 0.90rem;'>Detects sticky mechanical valves that jerk instead of moving smoothly.</div>
+        </div>
+        """
+        render_html(card_d3)
+
+    with c2:
+        card_d2 = """
+        <div class='metric-box'>
+            <div style='font-size: 1.05rem; font-weight: 700; color: #f8fafc; margin-bottom: 6px;'>〰️ Process Oscillation</div>
+            <div style='color: #cbd5e1; font-size: 0.90rem;'>Catches aggressive controller tuning and cyclical process swings.</div>
+        </div>
+        """
+        render_html(card_d2)
+
+        card_d4 = """
+        <div class='metric-box'>
+            <div style='font-size: 1.05rem; font-weight: 700; color: #f8fafc; margin-bottom: 6px;'>📊 Control Performance</div>
+            <div style='color: #cbd5e1; font-size: 0.90rem;'>Measures excess tracking variability compared to ideal control benchmarks.</div>
+        </div>
+        """
+        render_html(card_d4)
+
+    st.markdown("### How It Was Tested")
+    st.markdown(
+        textwrap.dedent(
+            """
+            1. **Simulated faults with known answers:** Validated detection logic across 60 synthetic control loops with known physical faults in clean, noisy, and load-disturbed regimes.
+            2. **A standard industrial benchmark:** Evaluated on the Tennessee Eastman Process benchmark for the Reactor Temperature loop, achieving 100 percent detection of Fault 14 and Fault 11 with 1 false alarm in 50 healthy runs.
+            3. **Honest limits:** Demonstrated that closed-loop control absorbs some disturbances (such as Fault 4, which is not visible to PV based checks), proving that valve output shifts must be tracked alongside sensor errors.
+            """
+        )
+    )
+
+    st.info("Validated on simulated data and one benchmark loop. Not yet validated on real plant data.")
+
+
+# -----------------------------------------------------------------------------
 # PAGE 1: OVERVIEW
 # -----------------------------------------------------------------------------
-if nav_choice == "Overview":
+elif nav_choice == "Overview":
     st.title("Control Loop Health Overview")
 
     # Display active ruleset banner
@@ -371,6 +467,7 @@ if nav_choice == "Overview":
                 with col_btn:
                     if st.button(f"Inspect {loop_name}", key=f"btn_{loop_name}"):
                         st.session_state.selected_loop_name = loop_name
+                        st.session_state.nav_radio = "Loop Drill-down"
                         st.rerun()
 
 

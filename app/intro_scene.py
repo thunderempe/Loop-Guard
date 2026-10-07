@@ -1,0 +1,254 @@
+"""
+Loop Guard - 3D Closed-Loop Animation Scene
+Renders a lightweight, interactive-free Three.js animation of a PID control loop.
+Features:
+- Pinned Three.js r128 from cdnjs
+- 5 labeled nodes: Setpoint -> Controller -> Valve -> Process -> Sensor
+- Glowing travel pulses and periodic fault detection flicker
+- Capped pixel ratio (2x), paused when tab is hidden, prefers-reduced-motion support
+- Instant static fallback diagram if WebGL/CDN is unavailable
+"""
+
+def build_intro_scene_html() -> str:
+    """
+    Build HTML/JS string for the 3D loop animation component.
+    All lines are stripped to guarantee no leading spaces or blank lines.
+    """
+    raw_html = """<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+width: 100%;
+height: 420px;
+overflow: hidden;
+background: transparent;
+font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+#webgl-container {
+width: 100%;
+height: 100%;
+position: absolute;
+top: 0;
+left: 0;
+}
+#fallback {
+display: none;
+width: 100%;
+height: 100%;
+padding: 28px 20px;
+background: radial-gradient(circle at 50% 50%, #1e293b 0%, #0d1117 100%);
+border-radius: 12px;
+border: 1px solid rgba(255, 255, 255, 0.08);
+flex-direction: column;
+justify-content: center;
+align-items: center;
+text-align: center;
+}
+.fb-title {
+font-size: 1.15rem;
+font-weight: 700;
+color: #f8fafc;
+margin-bottom: 24px;
+letter-spacing: 0.02em;
+}
+.fb-flow {
+display: flex;
+align-items: center;
+justify-content: center;
+gap: 10px;
+flex-wrap: wrap;
+max-width: 780px;
+}
+.fb-node {
+background: rgba(56, 189, 248, 0.12);
+color: #38bdf8;
+border: 1px solid rgba(56, 189, 248, 0.35);
+padding: 8px 14px;
+border-radius: 8px;
+font-weight: 600;
+font-size: 0.92rem;
+}
+.fb-arrow {
+color: #94a3b8;
+font-size: 1.1rem;
+}
+.fb-caption {
+margin-top: 24px;
+color: #94a3b8;
+font-size: 0.85rem;
+}
+</style>
+</head>
+<body>
+<div id="webgl-container"></div>
+<div id="fallback">
+<div class="fb-title">Closed Loop Feedback Architecture</div>
+<div class="fb-flow">
+<span class="fb-node">Setpoint</span>
+<span class="fb-arrow">&rarr;</span>
+<span class="fb-node">Controller</span>
+<span class="fb-arrow">&rarr;</span>
+<span class="fb-node">Valve</span>
+<span class="fb-arrow">&rarr;</span>
+<span class="fb-node">Process</span>
+<span class="fb-arrow">&rarr;</span>
+<span class="fb-node">Sensor</span>
+<span class="fb-arrow">&rarr;</span>
+<span class="fb-node">Feedback Error</span>
+</div>
+<div class="fb-caption">Continuous physical feedback loop passively inspected by Loop Guard.</div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function() {
+function showFallback() {
+var wc = document.getElementById("webgl-container");
+var fb = document.getElementById("fallback");
+if (wc) wc.style.display = "none";
+if (fb) fb.style.display = "flex";
+}
+if (!window.WebGLRenderingContext || !window.THREE) {
+showFallback();
+return;
+}
+var container = document.getElementById("webgl-container");
+var scene, camera, renderer;
+var loopGroup;
+var nodeMeshes = [];
+var lineMeshes = [];
+var pulseMeshes = [];
+var nodePositions = [];
+var radius = 2.7;
+var nodeCount = 5;
+var nodeNames = ["Setpoint", "Controller", "Valve", "Process", "Sensor"];
+var nodeColors = [0x38bdf8, 0x38bdf8, 0x10b981, 0xf59e0b, 0x6366f1];
+var isPaused = false;
+var animId = null;
+try {
+scene = new THREE.Scene();
+camera = new THREE.PerspectiveCamera(45, window.innerWidth / 420, 0.1, 100);
+camera.position.set(0, 2.2, 5.8);
+camera.lookAt(0, 0, 0);
+renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setSize(window.innerWidth, 420);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+renderer.setClearColor(0x000000, 0);
+container.appendChild(renderer.domElement);
+loopGroup = new THREE.Group();
+scene.add(loopGroup);
+for (var i = 0; i < nodeCount; i++) {
+var angle = (i / nodeCount) * Math.PI * 2 - Math.PI / 2;
+var x = Math.cos(angle) * radius;
+var z = Math.sin(angle) * radius;
+nodePositions.push(new THREE.Vector3(x, 0, z));
+var nodeGeo = new THREE.SphereGeometry(0.18, 16, 16);
+var nodeMat = new THREE.MeshBasicMaterial({ color: nodeColors[i] });
+var nodeMesh = new THREE.Mesh(nodeGeo, nodeMat);
+nodeMesh.position.set(x, 0, z);
+loopGroup.add(nodeMesh);
+nodeMeshes.push(nodeMesh);
+var canvas = document.createElement("canvas");
+canvas.width = 256;
+canvas.height = 64;
+var ctx = canvas.getContext("2d");
+ctx.clearRect(0, 0, 256, 64);
+ctx.fillStyle = "rgba(15, 23, 42, 0.75)";
+ctx.roundRect ? ctx.roundRect(8, 8, 240, 48, 8) : ctx.rect(8, 8, 240, 48);
+ctx.fill();
+ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";
+ctx.lineWidth = 2;
+ctx.stroke();
+ctx.font = "bold 22px -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif";
+ctx.fillStyle = "#f8fafc";
+ctx.textAlign = "center";
+ctx.textBaseline = "middle";
+ctx.fillText(nodeNames[i], 128, 32);
+var texture = new THREE.CanvasTexture(canvas);
+var spriteMat = new THREE.SpriteMaterial({ map: texture, transparent: true });
+var sprite = new THREE.Sprite(spriteMat);
+sprite.position.set(x * 1.32, 0.38, z * 1.32);
+sprite.scale.set(1.4, 0.35, 1);
+loopGroup.add(sprite);
+}
+for (var j = 0; j < nodeCount; j++) {
+var p1 = nodePositions[j];
+var p2 = nodePositions[(j + 1) % nodeCount];
+var curve = new THREE.LineCurve3(p1, p2);
+var tubeGeo = new THREE.TubeGeometry(curve, 16, 0.035, 8, false);
+var tubeMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.75 });
+var tubeMesh = new THREE.Mesh(tubeGeo, tubeMat);
+loopGroup.add(tubeMesh);
+lineMeshes.push(tubeMesh);
+var pGeo = new THREE.SphereGeometry(0.08, 10, 10);
+var pMat = new THREE.MeshBasicMaterial({ color: 0x67e8f9 });
+var pMesh = new THREE.Mesh(pGeo, pMat);
+loopGroup.add(pMesh);
+pulseMeshes.push(pMesh);
+}
+loopGroup.rotation.x = 0.42;
+var prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+if (prefersReduced) {
+renderer.render(scene, camera);
+return;
+}
+function onWindowResize() {
+if (!camera || !renderer) return;
+camera.aspect = window.innerWidth / 420;
+camera.updateProjectionMatrix();
+renderer.setSize(window.innerWidth, 420);
+}
+window.addEventListener("resize", onWindowResize);
+document.addEventListener("visibilitychange", function() {
+if (document.hidden) {
+isPaused = true;
+if (animId) cancelAnimationFrame(animId);
+} else {
+isPaused = false;
+animId = requestAnimationFrame(animate);
+}
+});
+var clock = new THREE.Clock();
+function animate() {
+if (isPaused) return;
+animId = requestAnimationFrame(animate);
+var elapsed = clock.getElapsedTime();
+loopGroup.rotation.y = elapsed * 0.22;
+loopGroup.rotation.x = 0.42 + Math.sin(elapsed * 0.35) * 0.05;
+camera.position.x = Math.sin(elapsed * 0.2) * 0.25;
+camera.position.y = 2.2 + Math.cos(elapsed * 0.25) * 0.15;
+camera.lookAt(0, 0, 0);
+for (var k = 0; k < nodeCount; k++) {
+var segProgress = (elapsed * 0.35 + k * (1.0 / nodeCount)) % 1.0;
+var segIdx = Math.floor(segProgress * nodeCount);
+var localT = (segProgress * nodeCount) - segIdx;
+var pA = nodePositions[segIdx];
+var pB = nodePositions[(segIdx + 1) % nodeCount];
+pulseMeshes[k].position.lerpVectors(pA, pB, localT);
+}
+var cycleTime = elapsed % 4.5;
+var faultSegment = lineMeshes[2];
+if (cycleTime > 2.0 && cycleTime < 2.9) {
+var flicker = Math.sin(elapsed * 24) > 0;
+faultSegment.material.color.setHex(flicker ? 0xef4444 : 0x38bdf8);
+faultSegment.material.opacity = flicker ? 1.0 : 0.75;
+nodeMeshes[2].material.color.setHex(flicker ? 0xef4444 : nodeColors[2]);
+} else {
+faultSegment.material.color.setHex(0x38bdf8);
+faultSegment.material.opacity = 0.75;
+nodeMeshes[2].material.color.setHex(nodeColors[2]);
+}
+renderer.render(scene, camera);
+}
+animId = requestAnimationFrame(animate);
+} catch (e) {
+showFallback();
+}
+})();
+</script>
+</body>
+</html>"""
+    lines = [line.strip() for line in raw_html.splitlines() if line.strip()]
+    return "\n".join(lines)
