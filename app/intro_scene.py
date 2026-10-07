@@ -6,6 +6,7 @@ Features:
 - 5 labeled nodes: Setpoint -> Controller -> Valve -> Process -> Sensor
 - Glowing travel pulses and periodic fault detection flicker
 - Capped pixel ratio (2x), paused when tab is hidden, prefers-reduced-motion support
+- Responsive camera fitting bounding sphere with margin for full rotation and drift
 - Instant static fallback diagram if WebGL/CDN is unavailable
 """
 
@@ -20,9 +21,11 @@ def build_intro_scene_html() -> str:
 <meta charset="utf-8">
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body {
+html, body {
 width: 100%;
-height: 420px;
+height: 100%;
+margin: 0;
+padding: 0;
 overflow: hidden;
 background: transparent;
 font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -30,9 +33,19 @@ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 #webgl-container {
 width: 100%;
 height: 100%;
+margin: 0;
+padding: 0;
+overflow: hidden;
 position: absolute;
 top: 0;
 left: 0;
+}
+canvas {
+display: block;
+width: 100%;
+height: 100%;
+margin: 0;
+overflow: hidden;
 }
 #fallback {
 display: none;
@@ -127,18 +140,64 @@ var nodeNames = ["Setpoint", "Controller", "Valve", "Process", "Sensor"];
 var nodeColors = [0x38bdf8, 0x38bdf8, 0x10b981, 0xf59e0b, 0x6366f1];
 var isPaused = false;
 var animId = null;
+
+var spriteRadialFactor = 1.32;
+var spriteHalfWidth = 0.7;
+var spriteY = 0.38;
+var spriteHalfHeight = 0.175;
+var spriteMaxR = Math.sqrt(Math.pow(radius * spriteRadialFactor + spriteHalfWidth, 2) + Math.pow(spriteY + spriteHalfHeight, 2));
+var nodeSphereRadius = 0.18;
+var nodeMaxR = radius + nodeSphereRadius;
+var boundingRadius = Math.max(spriteMaxR, nodeMaxR);
+var marginFactor = 1.15;
+var effectiveRadius = boundingRadius * marginFactor;
+
+var driftX = 0.25;
+var driftY = 0.15;
+var maxDrift = Math.sqrt(driftX * driftX + driftY * driftY);
+var camPitch = Math.atan2(2.2, 5.8);
+var camDistance = 13.0;
+var camY0 = camDistance * Math.sin(camPitch);
+var camZ0 = camDistance * Math.cos(camPitch);
+
+function updateDimensions() {
+if (!container || !camera || !renderer) return;
+var width = container.clientWidth || window.innerWidth || 800;
+var height = container.clientHeight || window.innerHeight || 460;
+var aspect = width / height;
+camera.aspect = aspect;
+var vHalfTan = Math.tan((camera.fov * Math.PI) / 360);
+var hHalfTan = aspect * vHalfTan;
+var limitingTan = Math.min(vHalfTan, hHalfTan);
+var limitingHalfAngle = Math.atan(limitingTan);
+var baseDist = effectiveRadius / Math.sin(limitingHalfAngle);
+camDistance = baseDist + maxDrift;
+camY0 = camDistance * Math.sin(camPitch);
+camZ0 = camDistance * Math.cos(camPitch);
+camera.updateProjectionMatrix();
+renderer.setSize(width, height);
+}
+
 try {
 scene = new THREE.Scene();
-camera = new THREE.PerspectiveCamera(45, window.innerWidth / 420, 0.1, 100);
-camera.position.set(0, 2.2, 5.8);
-camera.lookAt(0, 0, 0);
+camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
 renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-renderer.setSize(window.innerWidth, 420);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
 renderer.setClearColor(0x000000, 0);
+renderer.domElement.style.display = "block";
+renderer.domElement.style.width = "100%";
+renderer.domElement.style.height = "100%";
+renderer.domElement.style.margin = "0";
+renderer.domElement.style.overflow = "hidden";
 container.appendChild(renderer.domElement);
+
+updateDimensions();
+camera.position.set(0, camY0, camZ0);
+camera.lookAt(0, 0, 0);
+
 loopGroup = new THREE.Group();
 scene.add(loopGroup);
+
 for (var i = 0; i < nodeCount; i++) {
 var angle = (i / nodeCount) * Math.PI * 2 - Math.PI / 2;
 var x = Math.cos(angle) * radius;
@@ -169,10 +228,11 @@ ctx.fillText(nodeNames[i], 128, 32);
 var texture = new THREE.CanvasTexture(canvas);
 var spriteMat = new THREE.SpriteMaterial({ map: texture, transparent: true });
 var sprite = new THREE.Sprite(spriteMat);
-sprite.position.set(x * 1.32, 0.38, z * 1.32);
+sprite.position.set(x * spriteRadialFactor, spriteY, z * spriteRadialFactor);
 sprite.scale.set(1.4, 0.35, 1);
 loopGroup.add(sprite);
 }
+
 for (var j = 0; j < nodeCount; j++) {
 var p1 = nodePositions[j];
 var p2 = nodePositions[(j + 1) % nodeCount];
@@ -188,19 +248,20 @@ var pMesh = new THREE.Mesh(pGeo, pMat);
 loopGroup.add(pMesh);
 pulseMeshes.push(pMesh);
 }
+
 loopGroup.rotation.x = 0.42;
+
 var prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 if (prefersReduced) {
+camera.position.set(0, camY0, camZ0);
+camera.lookAt(0, 0, 0);
 renderer.render(scene, camera);
 return;
 }
-function onWindowResize() {
-if (!camera || !renderer) return;
-camera.aspect = window.innerWidth / 420;
-camera.updateProjectionMatrix();
-renderer.setSize(window.innerWidth, 420);
-}
-window.addEventListener("resize", onWindowResize);
+
+window.addEventListener("resize", updateDimensions);
+window.addEventListener("orientationchange", updateDimensions);
+
 document.addEventListener("visibilitychange", function() {
 if (document.hidden) {
 isPaused = true;
@@ -210,6 +271,7 @@ isPaused = false;
 animId = requestAnimationFrame(animate);
 }
 });
+
 var clock = new THREE.Clock();
 function animate() {
 if (isPaused) return;
@@ -217,8 +279,9 @@ animId = requestAnimationFrame(animate);
 var elapsed = clock.getElapsedTime();
 loopGroup.rotation.y = elapsed * 0.22;
 loopGroup.rotation.x = 0.42 + Math.sin(elapsed * 0.35) * 0.05;
-camera.position.x = Math.sin(elapsed * 0.2) * 0.25;
-camera.position.y = 2.2 + Math.cos(elapsed * 0.25) * 0.15;
+camera.position.x = Math.sin(elapsed * 0.2) * driftX;
+camera.position.y = camY0 + Math.cos(elapsed * 0.25) * driftY;
+camera.position.z = camZ0;
 camera.lookAt(0, 0, 0);
 for (var k = 0; k < nodeCount; k++) {
 var segProgress = (elapsed * 0.35 + k * (1.0 / nodeCount)) % 1.0;

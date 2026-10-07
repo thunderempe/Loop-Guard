@@ -281,7 +281,7 @@ if nav_choice == "Intro":
     st.caption("A health check for the control loops that keep a plant running.")
 
     # 3D Loop Animation Scene
-    components.html(build_intro_scene_html(), height=420)
+    components.html(build_intro_scene_html(), height=460)
 
     # Vertical breathing room above action buttons
     render_html(f"<div style='height: {INTRO_BUTTONS_TOP_SPACE_PX}px;'></div>")
