@@ -185,12 +185,28 @@ python notebooks/13_evaluate_fresh2000.py
 python scratch/tep_step2_eval_part_c.py
 ```
 
+### 4. Running the Operator Dashboard (Phase 4)
+
+Launch the Streamlit web dashboard to inspect and triage control loops:
+
+```bash
+# Activate virtual environment (Windows PowerShell)
+.\venv\Scripts\Activate.ps1
+# On Linux/macOS: source venv/bin/activate
+
+# Launch dashboard
+streamlit run app/streamlit_app.py
+```
+
 ---
 
 ## Project Structure
 
 ```text
 Loop Guard/
+├── app/                                 # Streamlit operator dashboard (Phase 4)
+│   ├── helpers.py                       # Data loading, validation, and diagnostic execution
+│   └── streamlit_app.py                 # Multi-page dashboard interface
 ├── data/
 │   ├── simulated/                       # Synthetic labeled loop CSV datasets
 │   └── tep/                             # TEP RData benchmark files (downloaded, gitignored)
