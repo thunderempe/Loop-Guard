@@ -334,3 +334,192 @@ def get_thresholds_summary(ruleset: str = "simulation", harris_delay: int = 3) -
             "D#3 (Valve Stiction)": "Stiction v2 default (R2 < 0.40, ZCR < 30.0, ACF >= 0.22, Period >= 35, Corr < 0.50)",
             "D#4 (Performance)": f"Harris Index I_H(d={harris_delay}) < 0.50 with error variance >= 0.05",
         }
+
+
+# -----------------------------------------------------------------------------
+# 5. Fault Knowledge Base & Suggested Actions (PART 1)
+# -----------------------------------------------------------------------------
+FAULT_KNOWLEDGE: Dict[str, Dict[str, Any]] = {
+    "drift": {
+        "title": "Sensor Drift",
+        "what_it_means": (
+            "The sensor reading is steadily pulling away from the target over time. "
+            "This creates a widening gap between the true physical condition and what the controller thinks is happening."
+        ),
+        "possible_causes": [
+            "Gradual sensor decalibration or aging transmitter electronics.",
+            "Physical coating, buildup, or fouling on the sensor probe.",
+            "Ambient temperature shifts affecting uncompensated instrument electronics.",
+            "Slow unmeasured baseline changes in upstream feed material.",
+        ],
+        "what_to_check": [
+            "Compare the current transmitter reading against a calibrated local gauge.",
+            "Inspect the probe for physical scaling, sediment, or corrosion.",
+            "Review recent zero and span calibration records for this instrument.",
+            "Verify instrument electrical signal wiring and ground integrity.",
+        ],
+        "risk_if_ignored": (
+            "Product quality will quietly drift outside technical specifications, leading to off-spec batches or wasted raw materials."
+        ),
+    },
+    "oscillation": {
+        "title": "Process Oscillation",
+        "what_it_means": (
+            "The process variable is repeatedly swinging back and forth across the target value. "
+            "This continuous wave pattern shows that the automated controller cannot find a stable balance."
+        ),
+        "possible_causes": [
+            "Controller tuning is too sensitive or aggressive for current plant conditions.",
+            "Cyclical disturbances cycling into this loop from upstream equipment.",
+            "Coupling or interaction with an adjacent control loop in the same unit.",
+            "Nonlinear process response shifts occurring at the current operating point.",
+        ],
+        "what_to_check": [
+            "Review PID controller gain and reset time settings against tuning records.",
+            "Inspect upstream process flows to see if the swing originates upstream.",
+            "Check whether neighboring control loops are oscillating at the same rhythm.",
+            "Confirm whether production rate changes altered the process response speed.",
+        ],
+        "risk_if_ignored": (
+            "Constant back and forth swinging accelerates mechanical valve wear, wastes utility energy, and can destabilize downstream process units."
+        ),
+    },
+    "stiction": {
+        "title": "Valve Stiction",
+        "what_it_means": (
+            "The mechanical valve is sticking in position and then suddenly jumping when control pressure builds up. "
+            "This jerky stop and start motion prevents the valve from making smooth, gradual corrections."
+        ),
+        "possible_causes": [
+            "Excessive friction from an over-tightened valve stem packing gland.",
+            "Product residue, solids, or scale buildup on the valve plug and seat.",
+            "Physical wear or galling on the valve stem or actuator guides.",
+            "Low or fluctuating pneumatic instrument air supply pressure.",
+        ],
+        "what_to_check": [
+            "Visually inspect the valve stem for physical scoring, debris, or dried product.",
+            "Check actuator air supply pressure and verify supply regulator stability.",
+            "Check valve packing nut torque against vendor specifications.",
+            "Observe valve stem travel locally while manually nudging the controller output.",
+        ],
+        "risk_if_ignored": (
+            "Sticking valves force the process into continuous cycling, cause premature actuator breakdown, and create product quality variability."
+        ),
+    },
+    "chatter": {
+        "title": "Actuator Chatter",
+        "what_it_means": (
+            "The valve position is rapidly jumping back and forth at every single measurement step. "
+            "This rapid alternating movement is the fastest possible cyclical pattern a digital valve can experience."
+        ),
+        "possible_causes": [
+            "Severe valve stem friction creating an alternating limit cycle.",
+            "Derivative controller action amplifying high-frequency sensor noise.",
+            "Digital valve positioner deadband set too tight for process dynamics.",
+            "Mechanical loose play or worn linkage between the actuator and positioner.",
+        ],
+        "what_to_check": [
+            "Inspect the valve positioner for error codes and travel chatter logs.",
+            "Check whether controller derivative action (Td) is active and reacting to noise.",
+            "Verify digital positioner tuning parameters and travel deadband settings.",
+            "Inspect feedback arm linkages and mounting brackets for mechanical play.",
+        ],
+        "risk_if_ignored": (
+            "Extreme chatter can destroy valve packings and internal positioner linkages within days or weeks of continuous operation."
+        ),
+    },
+    "performance": {
+        "title": "Degraded Control Performance",
+        "what_it_means": (
+            "The loop is generating substantially more tracking error variance than the best achievable control benchmark. "
+            "While the loop may maintain a steady average, it is operating with unnecessary variability."
+        ),
+        "possible_causes": [
+            "Sluggish controller tuning that responds too slowly to load disturbances.",
+            "Secondary impact from an underlying valve defect like stiction or deadband.",
+            "Unmeasured external process disturbances continuously upsetting the loop.",
+            "Uncompensated physical transport delay in fluid piping or equipment.",
+        ],
+        "what_to_check": [
+            "Inspect the loop for physical valve issues (stiction or drift) first.",
+            "Evaluate how long the loop takes to settle after routine setpoint steps.",
+            "Verify process delay and time constant estimates against design data.",
+            "Check if operational throughput or feed composition has shifted recently.",
+        ],
+        "risk_if_ignored": (
+            "Operating with poor control efficiency increases energy consumption, widens quality spreads, and lowers overall plant productivity."
+        ),
+    },
+}
+
+SUGGESTION_DISCLAIMER = (
+    "These are general guidelines based on the pattern detected. Always confirm on site before making changes."
+)
+
+
+def get_fault_actions(res: Dict[str, Any]) -> List[Tuple[str, Dict[str, Any]]]:
+    """
+    Return a list of (key, entry) from FAULT_KNOWLEDGE for all active flags in result.
+    Order: drift, chatter or stiction, oscillation, performance.
+    """
+    actions = []
+    if res.get("d1_flag"):
+        actions.append(("drift", FAULT_KNOWLEDGE["drift"]))
+    if res.get("d3_flag"):
+        if res.get("chatter_p2"):
+            actions.append(("chatter", FAULT_KNOWLEDGE["chatter"]))
+        else:
+            actions.append(("stiction", FAULT_KNOWLEDGE["stiction"]))
+    if res.get("d2_flag"):
+        actions.append(("oscillation", FAULT_KNOWLEDGE["oscillation"]))
+    if res.get("d4_flag"):
+        actions.append(("performance", FAULT_KNOWLEDGE["performance"]))
+    return actions
+
+
+def get_card_summary(res: Dict[str, Any], loop_name: str) -> str:
+    """
+    Generate a one-line plain English summary under the badges for overview cards.
+    """
+    if "Fault 4" in loop_name:
+        return "Status: Controller absorbed disturbance into valve movement. No fault detected."
+
+    flag_count = res.get("flag_count", 0)
+    if flag_count == 0:
+        return "Status: Operating normally. No issues detected."
+
+    d1 = res.get("d1_flag", False)
+    d2 = res.get("d2_flag", False)
+    d3 = res.get("d3_flag", False)
+    d4 = res.get("d4_flag", False)
+    chatter = res.get("chatter_p2", False)
+
+    stict_text = "actuator chatter" if chatter else "valve stiction"
+
+    # Single flag
+    if flag_count == 1:
+        if d1:
+            return "Likely cause: sensor drift. See drill-down for details."
+        if d3:
+            return f"Likely cause: {stict_text}. See drill-down for details."
+        if d2:
+            return "Likely cause: tuning or process oscillation. See drill-down for details."
+        if d4:
+            return "Likely cause: suboptimal controller performance. See drill-down for details."
+
+    # Multiple flags
+    primary_causes = []
+    if d1:
+        primary_causes.append("sensor drift")
+    if d3:
+        primary_causes.append(stict_text)
+    if d2:
+        primary_causes.append("oscillation")
+
+    if primary_causes and d4:
+        return f"Likely cause: {', '.join(primary_causes)} leading to degraded performance. See drill-down for details."
+    elif primary_causes:
+        return f"Likely cause: {', '.join(primary_causes)}. See drill-down for details."
+    else:
+        return "Multiple operational issues detected. See drill-down for details."
+

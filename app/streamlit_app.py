@@ -22,6 +22,9 @@ from app.helpers import (
     evaluate_loop_diagnostics,
     generate_plain_headline,
     get_thresholds_summary,
+    get_fault_actions,
+    get_card_summary,
+    SUGGESTION_DISCLAIMER,
 )
 
 # -----------------------------------------------------------------------------
@@ -34,63 +37,125 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# Custom CSS for clean cards and status badges (No em dashes or en dashes anywhere)
+# Custom CSS for dark theme, translucent cards, and high contrast badges (No em dashes or en dashes anywhere)
 st.markdown(
     """
     <style>
+    /* Dark background gradient across the app */
+    .stApp {
+        background: radial-gradient(circle at 15% 15%, #172033 0%, #0d1117 55%, #090d16 100%);
+        background-attachment: fixed;
+        color: #e2e8f0;
+    }
+
+    /* Sidebar styling */
+    [data-testid="stSidebar"] {
+        background-color: rgba(13, 17, 23, 0.92);
+        border-right: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    /* Soft translucent card styling */
+    .loop-card {
+        padding: 18px;
+        border-radius: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(22, 29, 45, 0.65);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        margin-bottom: 14px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+        transition: transform 0.15s ease, border-color 0.15s ease;
+    }
+    .loop-card:hover {
+        border-color: rgba(99, 102, 241, 0.35);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+    }
+
+    .metric-box {
+        background: rgba(22, 29, 45, 0.6);
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+        border-radius: 8px;
+        padding: 14px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        margin-bottom: 12px;
+    }
+
+    /* Clear, high contrast status badges */
     .badge-green {
-        background-color: #d4edda;
-        color: #155724;
+        background-color: rgba(16, 185, 129, 0.18);
+        color: #34d399;
         padding: 4px 10px;
         border-radius: 12px;
         font-weight: 600;
         font-size: 0.82rem;
         display: inline-block;
-        border: 1px solid #c3e6cb;
+        border: 1px solid rgba(52, 211, 153, 0.4);
     }
+
     .badge-yellow {
-        background-color: #fff3cd;
-        color: #856404;
+        background-color: rgba(245, 158, 11, 0.18);
+        color: #fbbf24;
         padding: 4px 10px;
         border-radius: 12px;
         font-weight: 600;
         font-size: 0.82rem;
         display: inline-block;
-        border: 1px solid #ffeeba;
+        border: 1px solid rgba(251, 191, 36, 0.4);
     }
+
     .badge-red {
-        background-color: #f8d7da;
-        color: #721c24;
+        background-color: rgba(239, 68, 68, 0.18);
+        color: #f87171;
         padding: 4px 10px;
         border-radius: 12px;
         font-weight: 600;
         font-size: 0.82rem;
         display: inline-block;
-        border: 1px solid #f5c6cb;
+        border: 1px solid rgba(248, 113, 113, 0.4);
     }
+
     .badge-neutral {
-        background-color: #e9ecef;
-        color: #495057;
+        background-color: rgba(148, 163, 184, 0.12);
+        color: #94a3b8;
         padding: 4px 8px;
         border-radius: 10px;
         font-size: 0.80rem;
         display: inline-block;
-        border: 1px solid #ced4da;
+        border: 1px solid rgba(148, 163, 184, 0.25);
     }
-    .loop-card {
-        padding: 16px;
-        border-radius: 8px;
-        border: 1px solid #e0e0e0;
-        background-color: #ffffff;
-        margin-bottom: 14px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+
+    /* Consistent heading font sizes and spacing */
+    h1 {
+        font-size: 1.85rem !important;
+        font-weight: 700 !important;
+        color: #f8fafc !important;
+        margin-bottom: 0.8rem !important;
     }
-    .metric-box {
-        background-color: #f8f9fa;
-        border-radius: 6px;
-        padding: 12px;
-        border: 1px solid #dee2e6;
-        margin-bottom: 10px;
+    h2 {
+        font-size: 1.4rem !important;
+        font-weight: 650 !important;
+        color: #f1f5f9 !important;
+        margin-top: 1.1rem !important;
+    }
+    h3 {
+        font-size: 1.2rem !important;
+        font-weight: 600 !important;
+        color: #e2e8f0 !important;
+        margin-top: 1.0rem !important;
+    }
+    h4 {
+        font-size: 1.02rem !important;
+        font-weight: 600 !important;
+        color: #cbd5e1 !important;
+    }
+
+    /* Expander styling for dark mode */
+    [data-testid="stExpander"] {
+        background: rgba(22, 29, 45, 0.5) !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        border-radius: 8px !important;
+        margin-bottom: 10px !important;
     }
     </style>
     """,
@@ -269,6 +334,8 @@ if nav_choice == "Overview":
                 tf = loop_df["true_fault_type"].iloc[0]
                 true_fault_text = f"&nbsp;&nbsp;<span style='color: #6c757d; font-size: 0.85rem;'>[Label: <b>{tf}</b>]</span>"
 
+            card_summary = get_card_summary(res, loop_name)
+
             # Render card container
             with st.container():
                 st.markdown(
@@ -276,7 +343,7 @@ if nav_choice == "Overview":
                     <div class='loop-card'>
                         <div style='display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;'>
                             <div>
-                                <span style='font-size: 1.15rem; font-weight: 700;'>{loop_name}</span>
+                                <span style='font-size: 1.15rem; font-weight: 700; color: #f8fafc;'>{loop_name}</span>
                                 {true_fault_text}
                             </div>
                             <div>{status_html}</div>
@@ -286,6 +353,9 @@ if nav_choice == "Overview":
                             {b_osc}
                             {b_stict}
                             {b_perf}
+                        </div>
+                        <div style='margin-top: 10px; font-size: 0.90rem; color: #cbd5e1; border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 8px;'>
+                            {card_summary}
                         </div>
                     </div>
                     """,
@@ -355,30 +425,71 @@ elif nav_choice == "Loop Drill-down":
                 "Detecting disturbances absorbed by control action requires monitoring valve OP shifts, not error metrics alone."
             )
 
+        # Section: What was found and what to do (PART 1)
+        st.markdown("### What was found and what to do")
+        actions = get_fault_actions(res)
+
+        if not actions:
+            st.success("No action needed: All diagnostic checks are operating within normal boundaries.")
+        else:
+            # Performance flag rule: if Performance is flagged together with another flag,
+            # add one sentence explaining that poor control quality is often a side effect of the other problem, so fix that one first.
+            other_flags = [k for k, _ in actions if k != "performance"]
+            has_perf = any(k == "performance" for k, _ in actions)
+            if has_perf and other_flags:
+                st.info("Note on priority: Poor control quality is often a side effect of the other problem, so fix that one first.")
+
+            for fault_key, entry in actions:
+                with st.expander(f"Suggested Action: {entry['title']}", expanded=True):
+                    st.markdown(f"**What it means:**\n\n{entry['what_it_means']}")
+                    st.markdown("**Possible causes:**")
+                    for cause in entry["possible_causes"]:
+                        st.markdown(f"* {cause}")
+                    st.markdown("**What to check:**")
+                    for check in entry["what_to_check"]:
+                        st.markdown(f"* {check}")
+                    st.markdown(f"**Risk if ignored:**\n\n{entry['risk_if_ignored']}")
+                    st.caption(SUGGESTION_DISCLAIMER)
+
         st.markdown("### Operational Time-Series")
 
-        # Time-series plots: Plot 1 = SP & PV; Plot 2 = OP
+        # Time-series plots: Plot 1 = SP & PV; Plot 2 = OP (Dark Theme Styled)
         t = ldf["timestep"].to_numpy()
         sp = ldf["SP"].to_numpy()
         pv = ldf["PV"].to_numpy()
         op = ldf["OP"].to_numpy()
 
-        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 4.8), sharex=True, gridspec_kw={"height_ratios": [2, 1]})
+        fig, (ax1, ax2) = plt.subplots(
+            2, 1, figsize=(10, 4.8), sharex=True, gridspec_kw={"height_ratios": [2, 1]}
+        )
+        fig.patch.set_facecolor("#111827")
+        ax1.set_facecolor("#0d1117")
+        ax2.set_facecolor("#0d1117")
+
+        for ax in (ax1, ax2):
+            ax.tick_params(colors="#cbd5e1")
+            ax.xaxis.label.set_color("#e2e8f0")
+            ax.yaxis.label.set_color("#e2e8f0")
+            for spine in ax.spines.values():
+                spine.set_color("#334155")
+            ax.grid(True, linestyle=":", alpha=0.35, color="#64748b")
 
         # SP & PV
-        ax1.plot(t, sp, label="Target Setpoint (SP)", color="#1f77b4", linestyle="--", linewidth=1.5)
-        ax1.plot(t, pv, label="Measured Sensor (PV)", color="#ff7f0e", linewidth=1.2, alpha=0.9)
+        ax1.plot(t, sp, label="Target Setpoint (SP)", color="#38bdf8", linestyle="--", linewidth=1.5)
+        ax1.plot(t, pv, label="Measured Sensor (PV)", color="#f59e0b", linewidth=1.2, alpha=0.95)
         ax1.set_ylabel("PV / SP")
-        ax1.grid(True, linestyle=":", alpha=0.6)
-        ax1.legend(loc="upper right", frameon=True)
-        ax1.set_title(f"{selected_loop} Operational Behavior", fontsize=11, fontweight="bold")
+        leg1 = ax1.legend(loc="upper right", frameon=True, facecolor="#1e293b", edgecolor="#334155")
+        for text in leg1.get_texts():
+            text.set_color("#e2e8f0")
+        ax1.set_title(f"{selected_loop} Operational Behavior", fontsize=11, fontweight="bold", color="#f8fafc")
 
         # OP
-        ax2.plot(t, op, label="Valve Command (OP)", color="#2ca02c", linewidth=1.2)
+        ax2.plot(t, op, label="Valve Command (OP)", color="#10b981", linewidth=1.2)
         ax2.set_xlabel("Time (samples)")
         ax2.set_ylabel("OP (%)")
-        ax2.grid(True, linestyle=":", alpha=0.6)
-        ax2.legend(loc="upper right", frameon=True)
+        leg2 = ax2.legend(loc="upper right", frameon=True, facecolor="#1e293b", edgecolor="#334155")
+        for text in leg2.get_texts():
+            text.set_color("#e2e8f0")
 
         plt.tight_layout()
         st.pyplot(fig)
@@ -472,19 +583,27 @@ elif nav_choice == "Loop Drill-down":
                 """
             )
 
-        # Stiction Phase Plane Plot
+        # Stiction Phase Plane Plot (Dark Theme Styled)
         st.markdown("### Valve Movement Phase Plane")
         st.caption("Scatter plot of valve output increment magnitude versus process variable increment magnitude.")
 
         dop = np.abs(np.diff(op))
         dpv = np.abs(np.diff(pv))
 
-        fig_scatter, ax_s = plt.subplots(figsize=(6, 4))
-        ax_s.scatter(dop, dpv, alpha=0.5, color="#6f42c1", edgecolors="none", s=25)
+        fig_scatter, ax_s = plt.subplots(figsize=(6, 3.8))
+        fig_scatter.patch.set_facecolor("#111827")
+        ax_s.set_facecolor("#0d1117")
+        ax_s.tick_params(colors="#cbd5e1")
+        ax_s.xaxis.label.set_color("#e2e8f0")
+        ax_s.yaxis.label.set_color("#e2e8f0")
+        for spine in ax_s.spines.values():
+            spine.set_color("#334155")
+        ax_s.grid(True, linestyle=":", alpha=0.35, color="#64748b")
+
+        ax_s.scatter(dop, dpv, alpha=0.55, color="#a855f7", edgecolors="none", s=25)
         ax_s.set_xlabel("|dOP| (Valve Command Step Size)")
         ax_s.set_ylabel("|dPV| (Process Variable Step Size)")
-        ax_s.set_title("Step-by-Step Movement Coupling (|dOP| vs |dPV|)", fontsize=10, fontweight="bold")
-        ax_s.grid(True, linestyle=":", alpha=0.6)
+        ax_s.set_title("Step-by-Step Movement Coupling (|dOP| vs |dPV|)", fontsize=10, fontweight="bold", color="#f8fafc")
 
         plt.tight_layout()
         st.pyplot(fig_scatter)

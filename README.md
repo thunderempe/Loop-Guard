@@ -12,7 +12,7 @@ Imagine you are driving a car on cruise control set to 60 mph.
 * If the computer reacts too aggressively, the car will constantly lurch faster and slower in an endless wave.
 * If you are driving on a bumpy gravel road, you would want a score telling you how much fuel and stability you are wasting compared to ideal driving.
 
-In industrial factories—such as chemical plants, oil refineries, and pharmaceutical manufacturing sites—thousands of automated gadgets do the exact same job as cruise control. They are called **PID control loops**. They open and close valves, adjust heaters, and throttle pumps to keep temperatures, pressures, liquid levels, and flows steady at a target value.
+In industrial factories, such as chemical plants, oil refineries, and pharmaceutical manufacturing sites, thousands of automated gadgets do the exact same job as cruise control. They are called **PID control loops**. They open and close valves, adjust heaters, and throttle pumps to keep temperatures, pressures, liquid levels, and flows steady at a target value.
 
 In a typical plant running 500 to 3,000 of these loops, many operate poorly at any given time (valves stick, sensors drift, tuning becomes unstable, or noise rattles the equipment). Human plant engineers cannot watch thousands of graphs every day, so problems often go unnoticed until a safety system trips, equipment breaks, or an entire batch of product is ruined.
 
@@ -80,7 +80,7 @@ Stiction detection was tested across the initial design sets and re-tested out-o
 | **Low Noise (Fresh +2000)** | Fresh random seeds (30 loops, 10 stiction) | 9 / 10 (90%) | 1 (Healthy Loop 2) |
 | **Moderate Noise (Design)** | Heavy noise: $\sigma_m=0.50, \sigma_d=0.80$ (30 loops, 10 stiction) | 7 / 10 (70%) | 0 |
 | **Moderate Noise (Fresh +2000)** | Fresh random seeds (30 loops, 10 stiction) | 5 / 10 (50%) | 0 |
-| **Disturbance (Design)** | Colored load disturbance: AR(1) $\phi=0.9, \sigma_w=0.15$ (30 loops, 10 stiction) | 10 / 10 (100%) | 5 (Healthy Loops 1–5) |
+| **Disturbance (Design)** | Colored load disturbance: AR(1) $\phi=0.9, \sigma_w=0.15$ (30 loops, 10 stiction) | 10 / 10 (100%) | 5 (Healthy Loops 1 to 5) |
 | **Disturbance (Fresh +2000)** | Fresh random seeds (30 loops, 10 stiction) | 10 / 10 (100%) | 4 (Healthy Loops 1, 2, 3, 5) |
 
 *What this means for a non-technical reader:* Loop Guard correctly spots sticking valves 90% to 100% of the time under normal factory conditions. However, when an unmeasured disturbance slowly pushes the process, healthy valves slowly wander to compensate, which can trick the system into suspecting valve stiction.
@@ -113,7 +113,7 @@ Evaluated on the Tennessee Eastman Process (TEP) benchmark for the Reactor Tempe
 1. **Simulated Healthy Baselines Are Cleaner Than Real Plants:**  
    Our synthetic healthy loops had zero measurement noise, making healthy baseline tracking artificially near-perfect. In the TEP benchmark, healthy reactor temperature has a natural baseline zero-crossing rate of ~52 per 100 steps and lag-1 autocorrelation of $-0.15$, proving that real plant loops are noise-dominated.
 2. **Stiction Detection (v2) Misses in Heavy Noise and Alarms Under Load Disturbances:**  
-   When sensor noise is severe ($\sigma_m = 0.50$), stiction limit-cycle recall drops to 50%–70% because noise jitter pushes zero crossings above the gate ceiling. In disturbance-dominated regimes, slow load wandering produces low step-by-step correlation, generating false stiction alarms on healthy loops (5/5 on design set, 4/5 on fresh set).
+   When sensor noise is severe ($\sigma_m = 0.50$), stiction limit-cycle recall drops to 50% to 70% because noise jitter pushes zero crossings above the gate ceiling. In disturbance-dominated regimes, slow load wandering produces low step-by-step correlation, generating false stiction alarms on healthy loops (5/5 on design set, 4/5 on fresh set).
 3. **Fault 4 Was Undetected by All Diagnostics:**  
    Fault 4 (a step change in cooling water inlet temperature) was missed by every PV-based diagnostic (0/50). Because the closed-loop PI controller successfully absorbed the disturbance by shifting the valve position by $+6.9\sigma$, the temperature PV showed $0\sigma$ change. Diagnosing disturbances absorbed by control requires inspecting valve OP shifts, not just error tracking.
 4. **Harris Index is Coarse and Biased on Short Data:**  
@@ -122,8 +122,8 @@ Evaluated on the Tennessee Eastman Process (TEP) benchmark for the Reactor Tempe
    Phase 3 validation was performed exclusively on the Reactor Temperature loop (`xmv_10` / `xmeas_9`). Multi-loop plant-wide interactions have not yet been evaluated.
 6. **TEP Rules Required Hand Adaptation:**  
    Unmodified Phase 2 thresholds did not transfer out-of-the-box to TEP due to baseline shift. The reported Phase 3 rules had to be calibrated on development runs 1 to 50 before being evaluated once on runs 51 to 100.
-7. **Dashboard Scope (v1 Built, Not Connected to Live Plant Historian Streams):**  
-   The Phase 4 Streamlit dashboard is built (v1: overview, drill-down, about page, CSV upload, TEP demo) for offline file-based analysis. It does not yet connect directly to live distributed control system (DCS) protocols or process multi-loop wide CSV files in batch.
+7. **Dashboard Scope (v1.1 Built, Not Connected to Live Plant Historian Streams):**  
+   The Phase 4 Streamlit dashboard is built (v1.1: overview cards with one-line plain summaries, drill-down with technician suggestions and fault knowledge base, dark theme visual polish, CSV upload, TEP demo) for offline file-based analysis. It does not yet connect directly to live distributed control system (DCS) protocols or process multi-loop wide CSV files in batch.
 
 ---
 
