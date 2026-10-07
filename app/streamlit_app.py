@@ -31,6 +31,10 @@ from app.helpers import (
 )
 from app.intro_scene import build_intro_scene_html
 
+# Layout Spacing Constants
+INTRO_BUTTONS_TOP_SPACE_PX = 48
+INTRO_BUTTONS_BOTTOM_SPACE_PX = 24
+
 # -----------------------------------------------------------------------------
 # App Configuration & Theme
 # -----------------------------------------------------------------------------
@@ -279,6 +283,9 @@ if nav_choice == "Intro":
     # 3D Loop Animation Scene
     components.html(build_intro_scene_html(), height=420)
 
+    # Vertical breathing room above action buttons
+    render_html(f"<div style='height: {INTRO_BUTTONS_TOP_SPACE_PX}px;'></div>")
+
     # Call to action buttons
     col_b1, col_b2 = st.columns(2)
     with col_b1:
@@ -291,6 +298,9 @@ if nav_choice == "Intro":
             st.session_state.nav_radio = "Overview"
             st.session_state.data_source_select = "Upload your own loop CSV"
             st.rerun()
+
+    # Vertical breathing room below action buttons
+    render_html(f"<div style='height: {INTRO_BUTTONS_BOTTOM_SPACE_PX}px;'></div>")
 
     st.markdown("---")
 
