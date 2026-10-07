@@ -523,3 +523,15 @@ def get_card_summary(res: Dict[str, Any], loop_name: str) -> str:
     else:
         return "Multiple operational issues detected. See drill-down for details."
 
+
+def render_html(html_str: str) -> None:
+    """
+    Render raw HTML safely in Streamlit without triggering Markdown code block formatting.
+    Strips leading and trailing whitespace from every line, removes blank lines,
+    ensures no line starts with 4 or more spaces, and passes to st.markdown.
+    """
+    cleaned_lines = [line.strip() for line in html_str.splitlines() if line.strip()]
+    cleaned_html = "\n".join(cleaned_lines)
+    st.markdown(cleaned_html, unsafe_allow_html=True)
+
+

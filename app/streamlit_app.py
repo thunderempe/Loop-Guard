@@ -4,6 +4,7 @@ Automated health monitoring for industrial PID control loops.
 """
 
 import sys
+import textwrap
 from pathlib import Path
 import numpy as np
 import pandas as pd
@@ -24,6 +25,7 @@ from app.helpers import (
     get_thresholds_summary,
     get_fault_actions,
     get_card_summary,
+    render_html,
     SUGGESTION_DISCLAIMER,
 )
 
@@ -38,7 +40,7 @@ st.set_page_config(
 )
 
 # Custom CSS for dark theme, translucent cards, and high contrast badges (No em dashes or en dashes anywhere)
-st.markdown(
+render_html(
     """
     <style>
     /* Dark background gradient across the app */
@@ -158,8 +160,7 @@ st.markdown(
         margin-bottom: 10px !important;
     }
     </style>
-    """,
-    unsafe_allow_html=True,
+    """
 )
 
 
@@ -283,20 +284,22 @@ if nav_choice == "Overview":
         # Status rule explanation expander
         with st.expander("How Overall Loop Status is Determined", expanded=False):
             st.markdown(
-                """
-                Each control loop is evaluated across four independent diagnostic checks:
-                1. **Sensor Drift (D#1):** Checks if the measurement is slowly wandering away from the setpoint.
-                2. **Oscillation (D#2):** Checks for rhythmic swinging or high-frequency measurement noise.
-                3. **Valve Stiction (D#3):** Checks if the mechanical valve is sticking and jumping.
-                4. **Performance (D#4):** Grades regulatory variance against theoretical minimum variance.
+                textwrap.dedent(
+                    """
+                    Each control loop is evaluated across four independent diagnostic checks:
+                    1. **Sensor Drift (D#1):** Checks if the measurement is slowly wandering away from the setpoint.
+                    2. **Oscillation (D#2):** Checks for rhythmic swinging or high-frequency measurement noise.
+                    3. **Valve Stiction (D#3):** Checks if the mechanical valve is sticking and jumping.
+                    4. **Performance (D#4):** Grades regulatory variance against theoretical minimum variance.
 
-                **Classification Criteria:**
-                * **Green (Healthy):** 0 diagnostics flagged.
-                * **Yellow (Attention Needed):** Exactly 1 diagnostic flagged.
-                * **Red (Action Required):** 2 or more diagnostics flagged.
+                    **Classification Criteria:**
+                    * **Green (Healthy):** 0 diagnostics flagged.
+                    * **Yellow (Attention Needed):** Exactly 1 diagnostic flagged.
+                    * **Red (Action Required):** 2 or more diagnostics flagged.
 
-                *Overall score is simply the count of flagged diagnostics out of 4.*
-                """
+                    *Overall score is simply the count of flagged diagnostics out of 4.*
+                    """
+                )
             )
 
         # Loop Cards
@@ -338,29 +341,24 @@ if nav_choice == "Overview":
 
             # Render card container
             with st.container():
-                st.markdown(
-                    f"""
-                    <div class='loop-card'>
-                        <div style='display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;'>
-                            <div>
-                                <span style='font-size: 1.15rem; font-weight: 700; color: #f8fafc;'>{loop_name}</span>
-                                {true_fault_text}
-                            </div>
-                            <div>{status_html}</div>
+                card_html = f"""
+                <div class='loop-card'>
+                    <div style='display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;'>
+                        <div>
+                            <span style='font-size: 1.15rem; font-weight: 700; color: #f8fafc;'>{loop_name}</span>{true_fault_text}
                         </div>
-                        <div style='margin-top: 8px; display: flex; gap: 8px; flex-wrap: wrap;'>
-                            {b_drift}
-                            {b_osc}
-                            {b_stict}
-                            {b_perf}
-                        </div>
-                        <div style='margin-top: 10px; font-size: 0.90rem; color: #cbd5e1; border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 8px;'>
-                            {card_summary}
-                        </div>
+                        <div>{status_html}</div>
                     </div>
-                    """,
-                    unsafe_allow_html=True,
-                )
+                    <div style='margin-top: 8px; display: flex; gap: 8px; flex-wrap: wrap;'>
+                        {b_drift}
+                        {b_osc}
+                        {b_stict}
+                        {b_perf}
+                    </div>
+                    <div style='margin-top: 10px; font-size: 0.90rem; color: #cbd5e1; border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 8px;'>{card_summary}</div>
+                </div>
+                """
+                render_html(card_html)
 
                 if "Fault 4" in loop_name:
                     st.info(
@@ -508,14 +506,16 @@ elif nav_choice == "Loop Drill-down":
             d1_flag_str = "FLAGGED (Drift Detected)" if res["d1_flag"] else "OK (Normal Tracking)"
             badge_class = "badge-red" if res["d1_flag"] else "badge-green"
 
-            st.markdown(f"Status: <span class='{badge_class}'>{d1_flag_str}</span>", unsafe_allow_html=True)
+            render_html(f"Status: <span class='{badge_class}'>{d1_flag_str}</span>")
             st.markdown(
-                f"""
-                * **Linear Fit R2:** `{d1_data['r2_linear']:.4f}` (Threshold: `>= 0.50`)
-                * **Error Drift Rate:** `{d1_data['error_slope']:.6f}` units per step
-                * **Mean Tracking Offset:** `{d1_data['mean_error']:.3f}` units
-                * **Overall Error RMSE:** `{d1_data['rmse_error']:.3f}` units
-                """
+                textwrap.dedent(
+                    f"""
+                    * **Linear Fit R2:** `{d1_data['r2_linear']:.4f}` (Threshold: `>= 0.50`)
+                    * **Error Drift Rate:** `{d1_data['error_slope']:.6f}` units per step
+                    * **Mean Tracking Offset:** `{d1_data['mean_error']:.3f}` units
+                    * **Overall Error RMSE:** `{d1_data['rmse_error']:.3f}` units
+                    """
+                )
             )
 
         # Panel 2: D#2 Oscillation Detection
@@ -526,14 +526,16 @@ elif nav_choice == "Loop Drill-down":
             d2_flag_str = "FLAGGED (Oscillation / Noise)" if res["d2_flag"] else "OK (Stable Regulation)"
             badge_class = "badge-red" if res["d2_flag"] else "badge-green"
 
-            st.markdown(f"Status: <span class='{badge_class}'>{d2_flag_str}</span>", unsafe_allow_html=True)
+            render_html(f"Status: <span class='{badge_class}'>{d2_flag_str}</span>")
             st.markdown(
-                f"""
-                * **Autocorrelation Score:** `{d2_data['acf_osc_score']:.4f}`
-                * **Dominant Period:** `{d2_data['dominant_period']:.1f}` steps per cycle
-                * **Zero-Crossing Rate:** `{d2_data['zero_crossing_rate']:.2f}` sign changes per 100 steps
-                * **Detrended Oscillation Amplitude:** `{d2_data['osc_amplitude']:.3f}` units
-                """
+                textwrap.dedent(
+                    f"""
+                    * **Autocorrelation Score:** `{d2_data['acf_osc_score']:.4f}`
+                    * **Dominant Period:** `{d2_data['dominant_period']:.1f}` steps per cycle
+                    * **Zero-Crossing Rate:** `{d2_data['zero_crossing_rate']:.2f}` sign changes per 100 steps
+                    * **Detrended Oscillation Amplitude:** `{d2_data['osc_amplitude']:.3f}` units
+                    """
+                )
             )
 
         col3, col4 = st.columns(2)
@@ -551,16 +553,18 @@ elif nav_choice == "Loop Drill-down":
                 stict_msg = "OK (Smooth Valve Travel)"
             badge_class = "badge-red" if res["d3_flag"] else "badge-green"
 
-            st.markdown(f"Status: <span class='{badge_class}'>{stict_msg}</span>", unsafe_allow_html=True)
+            render_html(f"Status: <span class='{badge_class}'>{stict_msg}</span>")
             corr_val = d3_data.get("op_pv_corr_filt", np.nan)
             corr_display = f"`{corr_val:.4f}`" if not np.isnan(corr_val) else "N/A"
             st.markdown(
-                f"""
-                * **Filtered OP-PV Correlation:** {corr_display} (Threshold: `< 0.50` stiction gap)
-                * **Oscillation Gate:** `{'Passed' if d3_data.get('oscillating') else 'No limit cycle'}`
-                * **Noise Gate:** `{'Passed' if d3_data.get('noise_excluded') else 'Exceeded noise ceiling'}`
-                * **Period-2 Chatter Flag:** `{'Yes (alternating limit cycle)' if res.get('chatter_p2') else 'No'}`
-                """
+                textwrap.dedent(
+                    f"""
+                    * **Filtered OP-PV Correlation:** {corr_display} (Threshold: `< 0.50` stiction gap)
+                    * **Oscillation Gate:** `{'Passed' if d3_data.get('oscillating') else 'No limit cycle'}`
+                    * **Noise Gate:** `{'Passed' if d3_data.get('noise_excluded') else 'Exceeded noise ceiling'}`
+                    * **Period-2 Chatter Flag:** `{'Yes (alternating limit cycle)' if res.get('chatter_p2') else 'No'}`
+                    """
+                )
             )
 
         # Panel 4: D#4 Harris Performance Index
@@ -571,16 +575,18 @@ elif nav_choice == "Loop Drill-down":
             d4_flag_str = "FLAGGED (Degraded Regulation)" if res["d4_flag"] else "OK (Adequate Control)"
             badge_class = "badge-red" if res["d4_flag"] else "badge-green"
 
-            st.markdown(f"Status: <span class='{badge_class}'>{d4_flag_str}</span>", unsafe_allow_html=True)
+            render_html(f"Status: <span class='{badge_class}'>{d4_flag_str}</span>")
             ih_val = d4_data.get("harris_index", np.nan)
             ih_display = f"`{ih_val:.4f}`" if not np.isnan(ih_val) else "N/A"
             st.markdown(
-                f"""
-                * **Harris Index I_H(d={res['harris_delay']}):** {ih_display} (Scale: 0.0 poor, 1.0 ideal)
-                * **Best AR Model Order:** `{d4_data.get('ar_order', 'N/A')}`
-                * **Total Error Variance:** `{d4_data.get('var_total', 0.0):.4f}`
-                * **Minimum Achievable Variance:** `{d4_data.get('var_mv', 0.0):.4f}`
-                """
+                textwrap.dedent(
+                    f"""
+                    * **Harris Index I_H(d={res['harris_delay']}):** {ih_display} (Scale: 0.0 poor, 1.0 ideal)
+                    * **Best AR Model Order:** `{d4_data.get('ar_order', 'N/A')}`
+                    * **Total Error Variance:** `{d4_data.get('var_total', 0.0):.4f}`
+                    * **Minimum Achievable Variance:** `{d4_data.get('var_mv', 0.0):.4f}`
+                    """
+                )
             )
 
         # Stiction Phase Plane Plot (Dark Theme Styled)
@@ -629,48 +635,52 @@ elif nav_choice == "About & Limits":
 
     st.markdown("### What is Loop Guard?")
     st.markdown(
-        """
-        Imagine driving a car on cruise control set to 60 mph:
-        * If your speedometer slowly decalibrates, the car might speed up to 75 mph while still claiming it is doing 60.
-        * If your accelerator pedal gets sticky, the engine lags behind your foot and then suddenly jerks forward.
-        * If the computer reacts too aggressively, the car constantly surges faster and slower in an endless wave.
-        * If you are driving on a bumpy road, you want a metric telling you how much fuel is being wasted compared to ideal driving.
+        textwrap.dedent(
+            """
+            Imagine driving a car on cruise control set to 60 mph:
+            * If your speedometer slowly decalibrates, the car might speed up to 75 mph while still claiming it is doing 60.
+            * If your accelerator pedal gets sticky, the engine lags behind your foot and then suddenly jerks forward.
+            * If the computer reacts too aggressively, the car constantly surges faster and slower in an endless wave.
+            * If you are driving on a bumpy road, you want a metric telling you how much fuel is being wasted compared to ideal driving.
 
-        In industrial plants (chemical refineries, oil platforms, pharmaceutical facilities), thousands of automated controllers 
-        called **PID loops** perform this exact cruise control job. They throttle valves and pumps to keep temperatures, pressures, 
-        and flows steady.
+            In industrial plants (chemical refineries, oil platforms, pharmaceutical facilities), thousands of automated controllers 
+            called **PID loops** perform this exact cruise control job. They throttle valves and pumps to keep temperatures, pressures, 
+            and flows steady.
 
-        **Loop Guard** acts as an automated, passive health monitor. It analyzes routine operational data already recorded by plant historians 
-        (target setpoint, actual sensor reading, valve command) to catch equipment and tuning faults before they lead to emergency shutdowns 
-        or spoiled product.
-        """
+            **Loop Guard** acts as an automated, passive health monitor. It analyzes routine operational data already recorded by plant historians 
+            (target setpoint, actual sensor reading, valve command) to catch equipment and tuning faults before they lead to emergency shutdowns 
+            or spoiled product.
+            """
+        )
     )
 
     st.markdown("---")
     st.markdown("### Honest Limitations")
     st.markdown(
-        """
-        These limitations are directly supported by experimental evaluation on the project datasets:
+        textwrap.dedent(
+            """
+            These limitations are directly supported by experimental evaluation on the project datasets:
 
-        1. **Simulated Healthy Loops Are Cleaner Than Real Plants:**  
-           Synthetic healthy loops had zero measurement noise, making baseline tracking artificially near-zero. On the industrial Tennessee Eastman Process (TEP) benchmark, healthy reactor temperature naturally crosses zero ~52 times per 100 steps with lag-1 autocorrelation of -0.15, proving that real plant loops are noise-dominated.
+            1. **Simulated Healthy Loops Are Cleaner Than Real Plants:**  
+               Synthetic healthy loops had zero measurement noise, making baseline tracking artificially near-zero. On the industrial Tennessee Eastman Process (TEP) benchmark, healthy reactor temperature naturally crosses zero ~52 times per 100 steps with lag-1 autocorrelation of -0.15, proving that real plant loops are noise-dominated.
 
-        2. **Valve Stiction Detection Misses in Heavy Noise and Alarms Under Load Disturbances:**  
-           Under heavy sensor noise (noise standard deviation 0.50), stiction recall drops to 50% to 70% because random zero crossings exceed the noise ceiling. When colored load disturbances wander slowly, healthy valves drift to compensate, producing false stiction alarms (4 to 5 out of 5 healthy loops).
+            2. **Valve Stiction Detection Misses in Heavy Noise and Alarms Under Load Disturbances:**  
+               Under heavy sensor noise (noise standard deviation 0.50), stiction recall drops to 50% to 70% because random zero crossings exceed the noise ceiling. When colored load disturbances wander slowly, healthy valves drift to compensate, producing false stiction alarms (4 to 5 out of 5 healthy loops).
 
-        3. **Fault 4 Was Completely Undetected by All PV Diagnostics:**  
-           TEP Fault 4 (a step change in cooling water inlet temperature) was missed by every PV-based diagnostic (0/50 runs). Because the closed-loop PI controller successfully absorbed the disturbance by shifting valve position by +6.9 standard deviations, the temperature PV showed no change. Detecting disturbances absorbed by control action requires monitoring valve position shifts, not tracking error alone.
+            3. **Fault 4 Was Completely Undetected by All PV Diagnostics:**  
+               TEP Fault 4 (a step change in cooling water inlet temperature) was missed by every PV-based diagnostic (0/50 runs). Because the closed-loop PI controller successfully absorbed the disturbance by shifting valve position by +6.9 standard deviations, the temperature PV showed no change. Detecting disturbances absorbed by control action requires monitoring valve position shifts, not tracking error alone.
 
-        4. **Harris Index is Coarse and Biased on Finite Data Records:**  
-           On 500-sample records, finite-sample estimation bias shifts the calculated Harris Index upward by approximately +0.05 with a sample standard deviation of 0.09. It functions as a relative performance health band rather than an exact regulator index. Furthermore, pure white measurement noise drives the index to 1.0, making pure noise look like ideal control.
+            4. **Harris Index is Coarse and Biased on Finite Data Records:**  
+               On 500-sample records, finite-sample estimation bias shifts the calculated Harris Index upward by approximately +0.05 with a sample standard deviation of 0.09. It functions as a relative performance health band rather than an exact regulator index. Furthermore, pure white measurement noise drives the index to 1.0, making pure noise look like ideal control.
 
-        5. **Only One TEP Loop Was Evaluated:**  
-           Industrial benchmark evaluation was conducted exclusively on the Reactor Temperature loop (cooling water valve `xmv_10` and temperature `xmeas_9`). Multi-loop plant-wide interactions across the remaining 11 control valves were not evaluated.
+            5. **Only One TEP Loop Was Evaluated:**  
+               Industrial benchmark evaluation was conducted exclusively on the Reactor Temperature loop (cooling water valve `xmv_10` and temperature `xmeas_9`). Multi-loop plant-wide interactions across the remaining 11 control valves were not evaluated.
 
-        6. **TEP Rules Required Hand Adaptation:**  
-           Unmodified synthetic thresholds did not transfer out-of-the-box to the industrial benchmark due to baseline noise shifts. The reported benchmark rules had to be calibrated on development runs 1 to 50 before evaluating report runs 51 to 100.
+            6. **TEP Rules Required Hand Adaptation:**  
+               Unmodified synthetic thresholds did not transfer out-of-the-box to the industrial benchmark due to baseline noise shifts. The reported benchmark rules had to be calibrated on development runs 1 to 50 before evaluating report runs 51 to 100.
 
-        7. **No Real Plant Data Evaluated Yet:**  
-           Loop Guard has so far been evaluated on synthetic transfer-function simulations and the simulated Tennessee Eastman Process, not on live telemetry from an operating refinery or chemical plant.
-        """
+            7. **No Real Plant Data Evaluated Yet:**  
+               Loop Guard has so far been evaluated on synthetic transfer-function simulations and the simulated Tennessee Eastman Process, not on live telemetry from an operating refinery or chemical plant.
+            """
+        )
     )
