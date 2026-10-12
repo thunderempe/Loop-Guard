@@ -43,8 +43,8 @@ Loop Guard runs four automated diagnostic checks:
 
 | Check | What It Looks For (Plain Words) | What It Is Good At | Where It Struggles |
 | :--- | :--- | :--- | :--- |
-| **D#1: Setpoint Tracking** | Checks if the sensor is slowly decalibrating and drifting away from the target over time. | Extremely clean separation of linear drift ramps: dashboard flags drift at $R^2 \ge 0.50$, and $0.65$ represents the midpoint of the gap seen on simulated data (weakest drift loop $0.68$, strongest non-drift loop $0.08$), with a $21\times$ to $33\times$ ratio of average $R^2$ values between drift and non-drift loops and 0 false alarms across simulated tests. | Misses sudden abrupt sensor jumps or nonlinear curves; assumes stationary setpoints. |
-| **D#2: Oscillation & Noise Detection** | Checks if the loop is swinging back and forth in a rhythm, or if the sensor is jittering with rapid noise. | Sliding-window autocorrelation captures episodic bursts even when the valve temporarily flattens against safety limits. | In high-noise environments, random noise causes healthy loops to cross zero frequently, tripping fixed noise thresholds. |
+| **D#1: Setpoint Tracking** | Checks if the sensor is slowly decalibrating and drifting away from the target over time. | Extremely clean separation of linear drift ramps: dashboard flags drift at R2 >= 0.50, and 0.65 represents the midpoint of the gap seen on simulated data (weakest drift loop 0.68, strongest non-drift loop 0.08), with a 21x to 33x ratio of average R2 values between drift and non-drift loops and 0 false alarms across simulated tests. | Misses sudden abrupt sensor jumps or nonlinear curves; assumes stationary setpoints. |
+| **D#2: Oscillation & Noise Detection** | Checks if the loop is swinging back and forth in a rhythm, or if the sensor is jittering with rapid noise. | Sliding-window autocorrelation captures episodic bursts even when the valve temporarily flattens against safety limits. | Autocorrelation score overlaps between tuning and stiction (only dominant period separates them); noise degrades the zero crossing rate. |
 | **D#3: Valve Stiction Detection (v2)** | Checks if a mechanical valve is sticking and jumping rather than moving smoothly with commands. | Moving-average filtering (MA-5) cleans sensor jitter, restoring a wide separation gap between stiction limit cycles and normal oscillations. | Low-frequency load disturbances make healthy loops wander slowly, mimicking stiction; fast valve chatter at period 2 is blocked by standard gates. |
 | **D#4: Harris Performance Index** | Grades control quality from 0.0 (severely degraded) to 1.0 (ideal control or pure random white noise). | Model-free benchmark calculated from routine data without pausing plant production or running intrusive step tests. | Blind to pure white sensor noise (scores white noise as 1.0); estimates have sample variance and slight upward bias on short time records. |
 
@@ -55,13 +55,13 @@ Loop Guard runs four automated diagnostic checks:
 * **Phase 0: Project Setup & Benchmark Sourcing**  
   Established the project structure, dependencies, and retrieved the extended Tennessee Eastman Process (TEP) benchmark dataset (Rieth et al., 2017) from Harvard Dataverse to serve as an industrial simulation testbed alongside custom synthetic models.
 * **Phase 1: Generative Physics & Fault Injection Simulator**  
-  Built a discrete-time First-Order Plus Dead-Time (FOPDT) process simulator coupled to a position-form digital PID controller with anti-windup clamping (`src/simulator.py`). Implemented five realistic closed-loop fault models (`src/faults.py`): sensor drift, 1-parameter deadband stiction (v1), 2-parameter Choudhury $(S, J)$ valve stiction (v2), aggressive oscillatory tuning, and high-frequency measurement noise.
+  Built a discrete-time First-Order Plus Dead-Time (FOPDT) process simulator coupled to a position-form digital PID controller with anti-windup clamping (`src/simulator.py`). Implemented five realistic closed-loop fault models (`src/faults.py`): sensor drift, 1-parameter deadband stiction (v1), 2-parameter Choudhury (S, J) valve stiction (v2), aggressive oscillatory tuning, and high-frequency measurement noise.
 * **Phase 2: Diagnostic Suite & Stress Testing**  
   Built four diagnostic modules (`src/diagnostics.py`). Proved D#4 with an 8-test known-answer unit suite against closed-form theoretical equations. Stress-tested the diagnostics under realistic field conditions (clean, low noise, moderate noise, and colored load disturbances). Diagnosed where initial rules broke under noise, created Stiction Detection v2 with a low-pass moving-average filter, and verified generalization out-of-sample on 120 loops generated with fresh random seeds (+2000 offset).
 * **Phase 3: Benchmark Validation on TEP Industrial Simulation**  
   Extracted and evaluated the critical Reactor Temperature loop (`xmv_10` cooling water valve, `xmeas_9` reactor temperature) from the Tennessee Eastman Process. Calibrated decision thresholds exclusively on development runs 1 to 50 (frozen in `scratch/part_c_frozen_rules.md`) and executed a strict single evaluation on unseen report runs 51 to 100 across Faults 14, 11, 4, and healthy baselines.
-* **Phase 4: Operator Triage Dashboard (Built - v1)**  
-  Built an interactive Streamlit web application (`app/streamlit_app.py`) allowing control engineers to triage loops. Includes a multi-loop overview with red/yellow/green status badges, single-loop drill-down with time-series and phase-plane plots, diagnostic explanations, CSV loop upload validation, and demonstration suites for both synthetic and TEP benchmark loops.
+* **Phase 4: Operator Triage Dashboard (Built - v1.2)**  
+  Built an interactive Streamlit web application (`app/streamlit_app.py`) allowing control engineers to triage loops. Includes an intro landing view with 3D closed-loop animation, multi-loop overview with status badges, single-loop drill-down with cached chart rendering, a fault knowledge base with reliability notes and actionable technician guidance (`app/fault_info.py`), split noise and oscillation flags, CSV loop upload validation with cached parsing, demonstration suites for both synthetic and TEP benchmark loops, and an automated pytest suite (`tests/`).
 
 ---
 
@@ -74,21 +74,21 @@ Stiction detection was tested across the initial design sets and re-tested out-o
 
 | Operating Regime | Environment Description | Stiction Detected (Recall) | False Alarms (Healthy/Drift/Tuning/Noise) |
 | :--- | :--- | :---: | :---: |
-| **Clean (Design)** | Ideal simulation, $\sigma_m=0, \sigma_d=0$ (60 loops, 20 stiction) | 19 / 20 (95%) | 1 (Healthy Loop 2) |
+| **Clean (Design)** | Ideal simulation, sigma_m = 0, sigma_d = 0 (60 loops, 20 stiction) | 19 / 20 (95%) | 1 (Healthy Loop 2) |
 | **Clean (Fresh +2000)** | Fresh random seeds, same process grid (30 loops, 10 stiction) | 9 / 10 (90%) | 1 (Healthy Loop 2) |
-| **Low Noise (Design)** | Realistic noise: $\sigma_m=0.15, \sigma_d=0.20$ (30 loops, 10 stiction) | 10 / 10 (100%) | 0 |
+| **Low Noise (Design)** | Realistic noise: sigma_m = 0.15, sigma_d = 0.20 (30 loops, 10 stiction) | 10 / 10 (100%) | 0 |
 | **Low Noise (Fresh +2000)** | Fresh random seeds (30 loops, 10 stiction) | 9 / 10 (90%) | 1 (Healthy Loop 2) |
-| **Moderate Noise (Design)** | Heavy noise: $\sigma_m=0.50, \sigma_d=0.80$ (30 loops, 10 stiction) | 7 / 10 (70%) | 0 |
+| **Moderate Noise (Design)** | Heavy noise: sigma_m = 0.50, sigma_d = 0.80 (30 loops, 10 stiction) | 7 / 10 (70%) | 0 |
 | **Moderate Noise (Fresh +2000)** | Fresh random seeds (30 loops, 10 stiction) | 5 / 10 (50%) | 0 |
-| **Disturbance (Design)** | Colored load disturbance: AR(1) $\phi=0.9, \sigma_w=0.15$ (30 loops, 10 stiction) | 10 / 10 (100%) | 5 (Healthy Loops 1 to 5) |
+| **Disturbance (Design)** | Colored load disturbance: AR(1) phi = 0.9, sigma_w = 0.15 (30 loops, 10 stiction) | 10 / 10 (100%) | 5 (Healthy Loops 1 to 5) |
 | **Disturbance (Fresh +2000)** | Fresh random seeds (30 loops, 10 stiction) | 10 / 10 (100%) | 4 (Healthy Loops 1, 2, 3, 5) |
 
 *What this means for a non-technical reader:* Loop Guard correctly spots sticking valves 90% to 100% of the time under normal factory conditions. However, when an unmeasured disturbance slowly pushes the process, healthy valves slowly wander to compensate, which can trick the system into suspecting valve stiction.
 
 #### Diagnostics D#1, D#2, and D#4 Summary on Simulated Data
-* **D#1 (Sensor Drift):** Maintained $100\%$ detection with $0$ false alarms across every simulated regime (dashboard flags drift at $R^2 \ge 0.50$, while $0.65$ serves as the midpoint between the weakest drift loop at $0.68$ and strongest non-drift loop at $0.08$, exhibiting a $21\times$ to $33\times$ ratio of average $R^2$ values between drift and non-drift loops).
-* **D#2 (Oscillation & Noise):** Windowed autocorrelation cleanly isolated oscillatory tuning. Zero-crossing rate ($>30.0$) separated noise faults in clean and low-noise regimes, but broke down in moderate noise where healthy loops naturally crossed zero 22 to 41 times per 100 steps.
-* **D#4 (Harris Performance Index):** Passed 8 out of 8 theoretical known-answer unit tests. Maintained invariant ranking across process delays ($d=2, 3, 4$). In colored disturbance regimes, scored realistic performance degradation ($I_H \approx 0.38$).
+* **D#1 (Sensor Drift):** Maintained 100% detection with 0 false alarms across every simulated regime (dashboard flags drift at R2 >= 0.50, while 0.65 serves as the midpoint between the weakest drift loop at 0.68 and strongest non-drift loop at 0.08, exhibiting a 21x to 33x ratio of average R2 values between drift and non-drift loops).
+* **D#2 (Oscillation & Noise):** The autocorrelation score overlaps between oscillatory tuning and valve stiction (only the dominant period separates them). Zero-crossing rate (> 30.0) separated noise faults in clean and low-noise regimes, but measurement noise degrades the zero-crossing rate (in moderate noise, healthy loops naturally crossed zero 22 to 41 times per 100 steps).
+* **D#4 (Harris Performance Index):** Passed 8 out of 8 theoretical known-answer unit tests. Maintained invariant ranking across process delays (d = 2, 3, 4). Healthy loops averaged about 0.38 under colored load disturbances, below the 0.50 flag line, so D#4 can flag healthy loops when disturbances are present.
 
 ---
 
@@ -111,19 +111,19 @@ Evaluated on the Tennessee Eastman Process (TEP) benchmark for the Reactor Tempe
 ## Honest Limitations
 
 1. **Simulated Healthy Baselines Are Cleaner Than Real Plants:**  
-   Our synthetic healthy loops had zero measurement noise, making healthy baseline tracking artificially near-perfect. In the TEP benchmark, healthy reactor temperature has a natural baseline zero-crossing rate of ~52 per 100 steps and lag-1 autocorrelation of $-0.15$, proving that real plant loops are noise-dominated.
+   Our synthetic healthy loops had zero measurement noise, making healthy baseline tracking artificially near-perfect. In the TEP benchmark, healthy reactor temperature has a natural baseline zero-crossing rate of ~52 per 100 steps and lag-1 autocorrelation of -0.15, proving that real plant loops are noise-dominated.
 2. **Stiction Detection (v2) Misses in Heavy Noise and Alarms Under Load Disturbances:**  
-   When sensor noise is severe ($\sigma_m = 0.50$), stiction limit-cycle recall drops to 50% to 70% because noise jitter pushes zero crossings above the gate ceiling. In disturbance-dominated regimes, slow load wandering produces low step-by-step correlation, generating false stiction alarms on healthy loops (5/5 on design set, 4/5 on fresh set).
+   When sensor noise is severe (sigma_m = 0.50), stiction limit-cycle recall drops to 50% to 70% because noise jitter pushes zero crossings above the gate ceiling. In disturbance-dominated regimes, slow load wandering produces low step-by-step correlation, generating false stiction alarms on healthy loops (5/5 on design set, 4/5 on fresh set).
 3. **Fault 4 Was Undetected by All Diagnostics:**  
-   Fault 4 (a step change in cooling water inlet temperature) was missed by every PV-based diagnostic (0/50). Because the closed-loop PI controller successfully absorbed the disturbance by shifting the valve position by $+6.9\sigma$, the temperature PV showed $0\sigma$ change. Diagnosing disturbances absorbed by control requires inspecting valve OP shifts, not just error tracking.
+   Fault 4 (a step change in cooling water inlet temperature) was missed by every PV-based diagnostic (0/50). Because the closed-loop PI controller successfully absorbed the disturbance by shifting the valve position by +6.9 sigma, the temperature PV showed 0 sigma change. Diagnosing disturbances absorbed by control requires inspecting valve OP shifts, not just error tracking.
 4. **Harris Index is Coarse and Biased on Short Data:**  
-   Finite-sample regression bias shifts the estimated Harris Index upward: after masking (about 340 usable samples from a 500-step run), the bias is $\approx +0.05$ with a standard deviation of $\approx 0.09$; on unmasked 500-sample records, the bias is about $+0.02$ with a standard deviation of about $0.07$. It functions as a relative health indicator, not an exact point metric. Additionally, pure white noise drives $I_H \to 1.0$, falsely making noise look like ideal control.
+   Finite-sample regression bias shifts the estimated Harris Index upward: after masking (about 340 usable samples from a 500-step run), the bias is about +0.05 with a standard deviation of about 0.09; on unmasked 500-sample records, the bias is about +0.02 with a standard deviation of about 0.07. It functions as a relative health indicator, not an exact point metric. Additionally, pure white noise drives I_H to 1.0, falsely making noise look like ideal control.
 5. **Only One TEP Loop Was Evaluated:**  
    Phase 3 validation was performed exclusively on the Reactor Temperature loop (`xmv_10` / `xmeas_9`). Multi-loop plant-wide interactions have not yet been evaluated.
 6. **TEP Rules Required Hand Adaptation:**  
    Unmodified Phase 2 thresholds did not transfer out-of-the-box to TEP due to baseline shift. The reported Phase 3 rules had to be calibrated on development runs 1 to 50 before being evaluated once on runs 51 to 100.
 7. **Dashboard Scope (v1.2 Built, Not Connected to Live Plant Historian Streams):**  
-   The Phase 4 Streamlit dashboard is built (v1.2: Intro landing page with 3D closed-loop animation, overview cards with one-line plain summaries, drill-down with technician suggestions and fault knowledge base, dark theme visual polish, CSV upload, TEP demo) for offline file-based analysis. It does not yet connect directly to live distributed control system (DCS) protocols or process multi-loop wide CSV files in batch.
+   The Phase 4 Streamlit dashboard is built (v1.2: Intro landing page with 3D closed-loop animation, overview cards with plain summary headlines, drill-down with technician suggestions and fault knowledge base containing reliability notes, split noise and oscillation flags, cached chart and upload parsing, verified with an automated pytest suite) for offline file-based analysis. It does not yet connect directly to live distributed control system (DCS) protocols or process multi-loop wide CSV files in batch.
 
 ---
 
@@ -145,7 +145,7 @@ python -m venv venv
 pip install -r requirements.txt
 ```
 
-### 2. Downloading the TEP Benchmark Data
+### 2. Downloading the TEP Benchmark Data & Creating Demo Subsets
 
 The raw Tennessee Eastman Process simulation files are large and excluded via `.gitignore`.
 1. Download the extended TEP training dataset published by Rieth et al. (2017) from the Harvard Dataverse:
@@ -154,7 +154,29 @@ The raw Tennessee Eastman Process simulation files are large and excluded via `.
    * `data/tep/TEP_FaultFree_Training.RData`
    * `data/tep/TEP_Faulty_Training.RData`
 
-### 3. Step-by-Step Reproduction Pipeline
+The dashboard TEP demonstration mode reads two preprocessed subset files from `scratch/`:
+* `scratch/tep_cache_ff_train.pkl` (fault-free baseline runs)
+* `scratch/tep_faulty_train_subset.csv.gz` (faulty candidate runs 1 to 100)
+
+To create these subset files from the raw `.RData` assets, run the extraction scripts in order:
+
+```bash
+# 1. Extract float32 fault-free baseline cache (writes scratch/tep_cache_ff_train.pkl)
+python scratch/tep_01_faultfree_structure.py
+
+# 2. Extract faulty candidate runs 1..100 subset (writes scratch/tep_faulty_train_subset.csv.gz)
+python scratch/tep_05_faulty_train_extract.py
+```
+
+### 3. Running the Test Suite
+
+Run the automated pytest test suite to verify diagnostic pipelines, headless navigation, and knowledge base integrity:
+
+```bash
+pytest tests/
+```
+
+### 4. Step-by-Step Reproduction Pipeline
 
 Run the scripts in the following order to reproduce the complete project results from scratch:
 
@@ -185,7 +207,7 @@ python notebooks/13_evaluate_fresh2000.py
 python scratch/tep_step2_eval_part_c.py
 ```
 
-### 4. Running the Operator Dashboard (Phase 4)
+### 5. Running the Operator Dashboard (Phase 4)
 
 Launch the Streamlit web dashboard to inspect and triage control loops:
 
@@ -205,7 +227,8 @@ streamlit run app/streamlit_app.py
 ```text
 Loop Guard/
 ├── app/                                 # Streamlit operator dashboard (Phase 4)
-│   ├── helpers.py                       # Data loading, validation, and diagnostic execution
+│   ├── fault_info.py                    # Fault knowledge base, plain-English guidance, and reliability notes
+│   ├── helpers.py                       # Data loading, validation, chart caching, and diagnostic execution
 │   ├── intro_scene.py                   # 3D closed-loop animation scene and static fallback
 │   └── streamlit_app.py                 # Multi-page dashboard interface
 ├── data/
@@ -228,7 +251,8 @@ Loop Guard/
 │   └── 13_evaluate_fresh2000.py         # One-time out-of-sample evaluation of D#3 v2
 ├── scratch/                             # Exploratory analysis and Phase 3 TEP evaluation
 │   ├── part_c_frozen_rules.md           # Formal rules frozen on TEP DEV split (runs 1-50)
-│   ├── tep_05_faulty_train_extract.py   # Streams and extracts TEP candidate loop subset
+│   ├── tep_01_faultfree_structure.py    # Caches fault-free baseline to tep_cache_ff_train.pkl
+│   ├── tep_05_faulty_train_extract.py   # Extracts candidate subset to tep_faulty_train_subset.csv.gz
 │   ├── tep_06_onset_exact.py            # Verifies exact sample 21 fault introduction
 │   ├── tep_10_inspect_fault14.py        # Inspects Fault 14 period-2 actuator chatter
 │   ├── tep_step2_eval_part_c.py         # One-time evaluation on TEP REPORT split (runs 51-100)
@@ -238,6 +262,11 @@ Loop Guard/
 │   ├── simulator.py                     # FOPDT physics engine, digital PID, and valve models
 │   ├── faults.py                        # Closed-loop physical fault injection routines
 │   └── diagnostics.py                   # The 4 diagnostic algorithms and batch calculators
+├── tests/                               # Automated pytest suite
+│   ├── conftest.py                      # Root path configuration and test setup
+│   ├── test_dashboard_diagnostics.py    # Diagnostic pipelines, cards, and knowledge base integrity tests
+│   ├── test_dashboard_navigation.py     # AppTest headless UI navigation flow tests
+│   └── test_fault_info.py               # Knowledge base schema, ruleset routing, and phrasing tests
 ├── requirements.txt                     # Pinned project dependencies
 └── README.md                            # Comprehensive project documentation
 ```
@@ -249,7 +278,7 @@ Loop Guard/
 * **Multi-Loop Batch CSV Ingestion:**  
   Support uploading wide-format plant historian exports containing dozens of loops simultaneously, auto-grouping by tag name prefixes.
 * **Automated Process Delay Estimator:**  
-  Automatically estimate loop dead time $d$ via cross-correlation between OP and PV, eliminating manual delay selection.
+  Automatically estimate loop dead time d via cross-correlation between OP and PV, eliminating manual delay selection.
 * **Per-Loop Baseline Auto-Calibration:**  
   Implement unsupervised baseline learning (e.g., using normal operating periods) to automatically adjust zero-crossing and ACF thresholds to each loop's natural noise level, eliminating manual threshold tuning.
 * **Shift Handover Report Export:**  
