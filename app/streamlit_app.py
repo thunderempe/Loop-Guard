@@ -180,6 +180,21 @@ nav_options = ["Intro", "Overview", "Loop Drill-down", "About & Limits"]
 if "nav_radio" not in st.session_state:
     st.session_state.nav_radio = "Intro"
 
+def inspect_loop_callback(target_loop: str) -> None:
+    st.session_state.selected_loop_name = target_loop
+    st.session_state.nav_radio = "Loop Drill-down"
+
+
+def intro_demo_callback() -> None:
+    st.session_state.nav_radio = "Overview"
+    st.session_state.data_source_select = "Demo: simulated loops"
+
+
+def intro_upload_callback() -> None:
+    st.session_state.nav_radio = "Overview"
+    st.session_state.data_source_select = "Upload your own loop CSV"
+
+
 nav_choice = st.sidebar.radio(
     "Navigation",
     nav_options,
@@ -248,8 +263,8 @@ elif data_source == "Demo: TEP Reactor Temperature":
 
 elif data_source == "Upload your own loop CSV":
     active_ruleset = "simulation"
-    st.sidebar.markdown(
-        "*Note: Experimental. Thresholds were validated on simulated data and one TEP chemical reactor loop, not on real plant data.*"
+    st.sidebar.info(
+        "Thresholds were calibrated on simulated loops and one TEP loop, and may need recalibrating for other plants."
     )
     uploaded_file = st.sidebar.file_uploader(
         "Upload loop CSV (SP, PV, OP)",
@@ -281,7 +296,7 @@ if nav_choice == "Intro":
     st.caption("A health check for the control loops that keep a plant running.")
 
     # 3D Loop Animation Scene
-    components.html(build_intro_scene_html(), height=500)
+    components.html(build_intro_scene_html(), height=800)
 
     # Vertical breathing room above action buttons
     render_html(f"<div style='height: {INTRO_BUTTONS_TOP_SPACE_PX}px;'></div>")
@@ -289,15 +304,20 @@ if nav_choice == "Intro":
     # Call to action buttons
     col_b1, col_b2 = st.columns(2)
     with col_b1:
-        if st.button("Explore the demo", type="primary", key="btn_intro_demo", use_container_width=True):
-            st.session_state.nav_radio = "Overview"
-            st.session_state.data_source_select = "Demo: simulated loops"
-            st.rerun()
+        st.button(
+            "Explore the demo",
+            type="primary",
+            key="btn_intro_demo",
+            use_container_width=True,
+            on_click=intro_demo_callback,
+        )
     with col_b2:
-        if st.button("Try your own loop data", key="btn_intro_upload", use_container_width=True):
-            st.session_state.nav_radio = "Overview"
-            st.session_state.data_source_select = "Upload your own loop CSV"
-            st.rerun()
+        st.button(
+            "Try your own loop data",
+            key="btn_intro_upload",
+            use_container_width=True,
+            on_click=intro_upload_callback,
+        )
 
     # Vertical breathing room below action buttons
     render_html(f"<div style='height: {INTRO_BUTTONS_BOTTOM_SPACE_PX}px;'></div>")
@@ -378,6 +398,9 @@ elif nav_choice == "Overview":
         st.info(f"Ruleset in use: **{ruleset_name}**")
     with col_r2:
         st.metric("Total Monitored Loops", len(active_loops_dict))
+
+    if data_source == "Upload your own loop CSV":
+        st.info("Thresholds were calibrated on simulated loops and one TEP loop, and may need recalibrating for other plants.")
 
     if upload_warning:
         st.warning(upload_warning)
@@ -475,10 +498,12 @@ elif nav_choice == "Overview":
 
                 col_btn, _ = st.columns([2, 8])
                 with col_btn:
-                    if st.button(f"Inspect {loop_name}", key=f"btn_{loop_name}"):
-                        st.session_state.selected_loop_name = loop_name
-                        st.session_state.nav_radio = "Loop Drill-down"
-                        st.rerun()
+                    st.button(
+                        f"Inspect {loop_name}",
+                        key=f"btn_{loop_name}",
+                        on_click=inspect_loop_callback,
+                        args=(loop_name,),
+                    )
 
 
 # -----------------------------------------------------------------------------
@@ -517,6 +542,8 @@ elif nav_choice == "Loop Drill-down":
         else:
             st.error(f"**Health Assessment:** {headline}")
 
+        st.caption("Thresholds were calibrated on simulated loops and one TEP loop, and may need recalibrating for other plants.")
+
         # True fault label if revealed
         if (reveal_faults or active_ruleset == "tep") and "true_fault_type" in ldf.columns:
             st.caption(f"Ground truth demonstration label: **{ldf['true_fault_type'].iloc[0]}**")
@@ -544,9 +571,21 @@ elif nav_choice == "Loop Drill-down":
             if has_perf and other_flags:
                 st.info("Note on priority: Poor control quality is often a side effect of the other problem, so fix that one first.")
 
+            # When stiction and oscillation both fire, show oscillation as a one line secondary note, not a full card.
+            has_stict = any(k in ("stiction", "chatter") for k, _ in actions)
+            has_osc = any(k == "oscillation" for k, _ in actions)
+            if has_stict and has_osc:
+                st.info("Secondary observation: Process oscillation was also detected, but valve stiction can cause cycling. Check and fix valve stiction first.")
+                actions = [(k, v) for k, v in actions if k != "oscillation"]
+
             for fault_key, entry in actions:
-                with st.expander(f"Suggested Action: {entry['title']}", expanded=True):
+                card_title = f"Status Details: {entry['title']}" if fault_key == "healthy" else f"Suggested Action: {entry['title']}"
+                with st.expander(card_title, expanded=True):
                     st.markdown(f"**What it means:**\n\n{entry['what_it_means']}")
+                    if entry.get("jargon_explained"):
+                        st.markdown(f"*{entry['jargon_explained']}*")
+                    if entry.get("reliability_short"):
+                        st.markdown(f"**Reliability:** {entry['reliability_short']}")
                     st.markdown("**Possible causes:**")
                     for cause in entry["possible_causes"]:
                         st.markdown(f"* {cause}")
@@ -554,6 +593,9 @@ elif nav_choice == "Loop Drill-down":
                     for check in entry["what_to_check"]:
                         st.markdown(f"* {check}")
                     st.markdown(f"**Risk if ignored:**\n\n{entry['risk_if_ignored']}")
+                    if entry.get("reliability_details"):
+                        with st.expander("Diagnostic Reliability Details", expanded=False):
+                            st.markdown(entry["reliability_details"])
                     st.caption(SUGGESTION_DISCLAIMER)
 
         st.markdown("### Operational Time-Series")
