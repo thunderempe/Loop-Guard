@@ -4,11 +4,13 @@ Provides cached data loading, preprocessing, diagnostic evaluations,
 and plain-English summary formatting.
 """
 
+import io
 from pathlib import Path
-from typing import Dict, Any, Tuple, Optional, List
+from typing import Dict, Any, Tuple, Optional, List, Union
 import numpy as np
 import pandas as pd
 import streamlit as st
+import matplotlib.pyplot as plt
 
 # Import core diagnostic functions from src
 from src.diagnostics import (
@@ -117,17 +119,27 @@ def load_tep_demo_data() -> Tuple[Optional[Dict[str, pd.DataFrame]], Optional[st
 # -----------------------------------------------------------------------------
 # 2. Upload Validation and Preprocessing
 # -----------------------------------------------------------------------------
-def validate_and_preprocess_upload(uploaded_file) -> Tuple[pd.DataFrame, Optional[str]]:
+@st.cache_data
+def validate_and_preprocess_upload(file_input: Any) -> Tuple[pd.DataFrame, Optional[str]]:
     """
-    Validate user-uploaded loop CSV file:
-    1. Check case-insensitive column names for SP, PV, OP.
-    2. Check for missing values / NaNs.
-    3. Forward-fill gaps of up to 3 samples and warn.
+    Validate user uploaded loop CSV file from bytes or uploaded file buffer:
+    1. Check case insensitive column names for SP, PV, OP.
+    2. Check for missing values or NaNs.
+    3. Forward fill gaps of up to 3 samples and warn.
     4. Raise ValueError if gaps exceed 3 samples or if sample count < 125.
     Returns (cleaned_dataframe, warning_message).
     """
+    if isinstance(file_input, bytes):
+        raw_bytes = file_input
+    elif hasattr(file_input, "getvalue"):
+        raw_bytes = file_input.getvalue()
+    elif hasattr(file_input, "read"):
+        raw_bytes = file_input.read()
+    else:
+        raw_bytes = bytes(file_input)
+
     try:
-        df = pd.read_csv(uploaded_file)
+        df = pd.read_csv(io.BytesIO(raw_bytes))
     except Exception as e:
         raise ValueError(f"Could not parse uploaded CSV file: {str(e)}")
 
@@ -194,7 +206,8 @@ def validate_and_preprocess_upload(uploaded_file) -> Tuple[pd.DataFrame, Optiona
     if "timestep" not in df.columns:
         df["timestep"] = np.arange(len(df), dtype=float)
     else:
-        df["timestep"] = pd.to_numeric(df["timestep"], errors="coerce").fillna(np.arange(len(df), dtype=float))
+        fallback_series = pd.Series(np.arange(len(df), dtype=float), index=df.index)
+        df["timestep"] = pd.to_numeric(df["timestep"], errors="coerce").fillna(fallback_series)
 
     df["loop_display_name"] = "Uploaded Loop"
     df["true_fault_type"] = "User Uploaded (Unlabeled)"
@@ -441,5 +454,94 @@ def render_html(html_str: str) -> None:
     cleaned_lines = [line.strip() for line in html_str.splitlines() if line.strip()]
     cleaned_html = "\n".join(cleaned_lines)
     st.markdown(cleaned_html, unsafe_allow_html=True)
+
+
+# -----------------------------------------------------------------------------
+# 6. Cached Chart Rendering
+# -----------------------------------------------------------------------------
+@st.cache_data
+def build_drilldown_chart_png(
+    chart_type: str,
+    loop_name: str,
+    data_source: str,
+    ldf: pd.DataFrame,
+) -> bytes:
+    """
+    Build and cache drill down diagnostic charts as PNG bytes.
+    chart_type: 'timeseries' or 'phase_plane'
+    """
+    buf = io.BytesIO()
+
+    if chart_type == "timeseries":
+        t = ldf["timestep"].to_numpy()
+        sp = ldf["SP"].to_numpy()
+        pv = ldf["PV"].to_numpy()
+        op = ldf["OP"].to_numpy()
+
+        fig, (ax1, ax2) = plt.subplots(
+            2, 1, figsize=(10, 4.8), sharex=True, gridspec_kw={"height_ratios": [2, 1]}
+        )
+        fig.patch.set_facecolor("#111827")
+        ax1.set_facecolor("#0d1117")
+        ax2.set_facecolor("#0d1117")
+
+        for ax in (ax1, ax2):
+            ax.tick_params(colors="#cbd5e1")
+            ax.xaxis.label.set_color("#e2e8f0")
+            ax.yaxis.label.set_color("#e2e8f0")
+            for spine in ax.spines.values():
+                spine.set_color("#334155")
+            ax.grid(True, linestyle=":", alpha=0.35, color="#64748b")
+
+        # SP and PV
+        ax1.plot(t, sp, label="Target Setpoint (SP)", color="#38bdf8", linestyle="--", linewidth=1.5)
+        ax1.plot(t, pv, label="Measured Sensor (PV)", color="#f59e0b", linewidth=1.2, alpha=0.95)
+        ax1.set_ylabel("PV / SP")
+        leg1 = ax1.legend(loc="upper right", frameon=True, facecolor="#1e293b", edgecolor="#334155")
+        for text in leg1.get_texts():
+            text.set_color("#e2e8f0")
+        ax1.set_title(f"{loop_name} Operational Behavior", fontsize=11, fontweight="bold", color="#f8fafc")
+
+        # OP
+        ax2.plot(t, op, label="Valve Command (OP)", color="#10b981", linewidth=1.2)
+        ax2.set_xlabel("Time (samples)")
+        ax2.set_ylabel("OP (%)")
+        leg2 = ax2.legend(loc="upper right", frameon=True, facecolor="#1e293b", edgecolor="#334155")
+        for text in leg2.get_texts():
+            text.set_color("#e2e8f0")
+
+        plt.tight_layout()
+        fig.savefig(buf, format="png", bbox_inches="tight")
+        plt.close(fig)
+
+    elif chart_type == "phase_plane":
+        pv = ldf["PV"].to_numpy()
+        op = ldf["OP"].to_numpy()
+        dop = np.abs(np.diff(op))
+        dpv = np.abs(np.diff(pv))
+
+        fig_scatter, ax_s = plt.subplots(figsize=(6, 3.8))
+        fig_scatter.patch.set_facecolor("#111827")
+        ax_s.set_facecolor("#0d1117")
+        ax_s.tick_params(colors="#cbd5e1")
+        ax_s.xaxis.label.set_color("#e2e8f0")
+        ax_s.yaxis.label.set_color("#e2e8f0")
+        for spine in ax_s.spines.values():
+            spine.set_color("#334155")
+        ax_s.grid(True, linestyle=":", alpha=0.35, color="#64748b")
+
+        ax_s.scatter(dop, dpv, alpha=0.55, color="#a855f7", edgecolors="none", s=25)
+        ax_s.set_xlabel("|dOP| (Valve Command Step Size)")
+        ax_s.set_ylabel("|dPV| (Process Variable Step Size)")
+        ax_s.set_title("Step by Step Movement Coupling (|dOP| vs |dPV|)", fontsize=10, fontweight="bold", color="#f8fafc")
+
+        plt.tight_layout()
+        fig_scatter.savefig(buf, format="png", bbox_inches="tight")
+        plt.close(fig_scatter)
+    else:
+        raise ValueError(f"Unknown chart_type: {chart_type}")
+
+    buf.seek(0)
+    return buf.getvalue()
 
 

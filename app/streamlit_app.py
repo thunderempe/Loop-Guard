@@ -26,6 +26,7 @@ from app.helpers import (
     get_thresholds_summary,
     get_fault_actions,
     get_card_summary,
+    build_drilldown_chart_png,
     render_html,
     SUGGESTION_DISCLAIMER,
 )
@@ -273,7 +274,7 @@ elif data_source == "Upload your own loop CSV":
     )
     if uploaded_file is not None:
         try:
-            cleaned_df, upload_warning = validate_and_preprocess_upload(uploaded_file)
+            cleaned_df, upload_warning = validate_and_preprocess_upload(uploaded_file.getvalue())
             active_loops_dict = {"Uploaded Loop": cleaned_df}
         except Exception as e:
             data_error = str(e)
@@ -600,47 +601,9 @@ elif nav_choice == "Loop Drill-down":
 
         st.markdown("### Operational Time-Series")
 
-        # Time-series plots: Plot 1 = SP & PV; Plot 2 = OP (Dark Theme Styled)
-        t = ldf["timestep"].to_numpy()
-        sp = ldf["SP"].to_numpy()
-        pv = ldf["PV"].to_numpy()
-        op = ldf["OP"].to_numpy()
-
-        fig, (ax1, ax2) = plt.subplots(
-            2, 1, figsize=(10, 4.8), sharex=True, gridspec_kw={"height_ratios": [2, 1]}
-        )
-        fig.patch.set_facecolor("#111827")
-        ax1.set_facecolor("#0d1117")
-        ax2.set_facecolor("#0d1117")
-
-        for ax in (ax1, ax2):
-            ax.tick_params(colors="#cbd5e1")
-            ax.xaxis.label.set_color("#e2e8f0")
-            ax.yaxis.label.set_color("#e2e8f0")
-            for spine in ax.spines.values():
-                spine.set_color("#334155")
-            ax.grid(True, linestyle=":", alpha=0.35, color="#64748b")
-
-        # SP & PV
-        ax1.plot(t, sp, label="Target Setpoint (SP)", color="#38bdf8", linestyle="--", linewidth=1.5)
-        ax1.plot(t, pv, label="Measured Sensor (PV)", color="#f59e0b", linewidth=1.2, alpha=0.95)
-        ax1.set_ylabel("PV / SP")
-        leg1 = ax1.legend(loc="upper right", frameon=True, facecolor="#1e293b", edgecolor="#334155")
-        for text in leg1.get_texts():
-            text.set_color("#e2e8f0")
-        ax1.set_title(f"{selected_loop} Operational Behavior", fontsize=11, fontweight="bold", color="#f8fafc")
-
-        # OP
-        ax2.plot(t, op, label="Valve Command (OP)", color="#10b981", linewidth=1.2)
-        ax2.set_xlabel("Time (samples)")
-        ax2.set_ylabel("OP (%)")
-        leg2 = ax2.legend(loc="upper right", frameon=True, facecolor="#1e293b", edgecolor="#334155")
-        for text in leg2.get_texts():
-            text.set_color("#e2e8f0")
-
-        plt.tight_layout()
-        st.pyplot(fig)
-        plt.close(fig)
+        # Operational Time Series Plot (Cached PNG)
+        ts_chart_bytes = build_drilldown_chart_png("timeseries", selected_loop, data_source, ldf)
+        st.image(ts_chart_bytes, use_container_width=True)
 
         st.markdown("### Detailed Diagnostic Results")
 
@@ -738,31 +701,12 @@ elif nav_choice == "Loop Drill-down":
                 )
             )
 
-        # Stiction Phase Plane Plot (Dark Theme Styled)
+        # Stiction Phase Plane Plot (Cached PNG)
         st.markdown("### Valve Movement Phase Plane")
         st.caption("Scatter plot of valve output increment magnitude versus process variable increment magnitude.")
 
-        dop = np.abs(np.diff(op))
-        dpv = np.abs(np.diff(pv))
-
-        fig_scatter, ax_s = plt.subplots(figsize=(6, 3.8))
-        fig_scatter.patch.set_facecolor("#111827")
-        ax_s.set_facecolor("#0d1117")
-        ax_s.tick_params(colors="#cbd5e1")
-        ax_s.xaxis.label.set_color("#e2e8f0")
-        ax_s.yaxis.label.set_color("#e2e8f0")
-        for spine in ax_s.spines.values():
-            spine.set_color("#334155")
-        ax_s.grid(True, linestyle=":", alpha=0.35, color="#64748b")
-
-        ax_s.scatter(dop, dpv, alpha=0.55, color="#a855f7", edgecolors="none", s=25)
-        ax_s.set_xlabel("|dOP| (Valve Command Step Size)")
-        ax_s.set_ylabel("|dPV| (Process Variable Step Size)")
-        ax_s.set_title("Step-by-Step Movement Coupling (|dOP| vs |dPV|)", fontsize=10, fontweight="bold", color="#f8fafc")
-
-        plt.tight_layout()
-        st.pyplot(fig_scatter)
-        plt.close(fig_scatter)
+        phase_chart_bytes = build_drilldown_chart_png("phase_plane", selected_loop, data_source, ldf)
+        st.image(phase_chart_bytes)
 
         st.caption(
             "Interpretation: A healthy linear loop exhibits diagonal scatter (valve moves cause immediate process changes). "
