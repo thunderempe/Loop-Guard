@@ -287,3 +287,12 @@ Loop Guard/
   Implement unsupervised baseline learning (e.g., using normal operating periods) to automatically adjust zero-crossing and ACF thresholds to each loop's natural noise level, eliminating manual threshold tuning.
 * **Shift Handover Report Export:**  
   One-click generation of printable summary reports and executive summaries for engineering shift handovers.
+
+---
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+The Tennessee Eastman Process demonstration data in `data/tep_demo/` is a derived subset of the benchmark dataset published by Rieth et al. (2017) on the Harvard Dataverse and remains subject to that dataset's original terms and attribution.
+
