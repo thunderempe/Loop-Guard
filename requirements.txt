@@ -1,8 +1,8 @@
-numpy
-scipy
-pandas
-matplotlib
-pyreadr
-statsmodels
-streamlit
-pytest
+numpy==2.5.4
+scipy==1.18.1
+pandas==3.0.6
+matplotlib==3.11.2
+pyreadr==0.5.7
+statsmodels==0.15.0
+streamlit==1.65.0
+pytest==9.1.1
