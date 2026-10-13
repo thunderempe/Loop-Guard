@@ -61,29 +61,48 @@ def load_simulated_demo_data() -> Dict[str, pd.DataFrame]:
     return loops_dict
 
 
+def is_tep_demo_subset() -> bool:
+    """Return True if using the compact committed TEP demo subset rather than the full scratch dataset."""
+    ff_path = ROOT_DIR / "scratch" / "tep_cache_ff_train.pkl"
+    faulty_path = ROOT_DIR / "scratch" / "tep_faulty_train_subset.csv.gz"
+    return not (ff_path.exists() and faulty_path.exists())
+
+
 @st.cache_data
 def load_tep_demo_data() -> Tuple[Optional[Dict[str, pd.DataFrame]], Optional[str]]:
     """
     Load Tennessee Eastman Process demonstration runs for the Reactor Temperature loop.
     Reuses the extraction logic from scratch/tep_step2_eval_part_c.py.
     Shows 1 Healthy run, 1 Fault 14 run, 1 Fault 11 run, and 1 Fault 4 run (Run 51).
+    Uses full scratch dataset if present, otherwise falls back to data/tep_demo/.
     If TEP files are missing, returns (None, friendly_message).
     """
     ff_path = ROOT_DIR / "scratch" / "tep_cache_ff_train.pkl"
     faulty_path = ROOT_DIR / "scratch" / "tep_faulty_train_subset.csv.gz"
+    demo_path = ROOT_DIR / "data" / "tep_demo" / "tep_reactor_temp_demo.csv.gz"
 
-    if not ff_path.exists() or not faulty_path.exists():
+    using_full = ff_path.exists() and faulty_path.exists()
+    using_demo = demo_path.exists()
+
+    if not using_full and not using_demo:
         msg = (
             "TEP benchmark data files were not found locally in scratch/ "
-            "(tep_cache_ff_train.pkl or tep_faulty_train_subset.csv.gz). "
+            "(tep_cache_ff_train.pkl or tep_faulty_train_subset.csv.gz) "
+            "or data/tep_demo/ (tep_reactor_temp_demo.csv.gz). "
             "Please download the TEP dataset or run the scratch extraction scripts first."
         )
         return None, msg
 
     try:
-        df_ff = pd.read_pickle(ff_path)
-        df_faulty = pd.read_csv(faulty_path)
-        df_faulty["sample"] = df_faulty["sample"].astype(int)
+        if using_full:
+            df_ff = pd.read_pickle(ff_path)
+            df_faulty = pd.read_csv(faulty_path)
+            df_faulty["sample"] = df_faulty["sample"].astype(int)
+        else:
+            demo_df = pd.read_csv(demo_path)
+            demo_df["sample"] = demo_df["sample"].astype(int)
+            df_ff = demo_df[demo_df["faultNumber"] == 0]
+            df_faulty = demo_df[demo_df["faultNumber"] > 0]
 
         sp_nominal = 120.40  # Grand mean nominal setpoint for Reactor Temperature
         target_run = 51      # First run of the report evaluation split (51..100)

@@ -5,7 +5,9 @@ import subprocess
 import sys
 from pathlib import Path
 
-PROJECT_ROOT = Path(r'D:\Loop Gaurd')
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
 scripts = [
     'notebooks/02_validate_setpoint_tracking.py',
     'notebooks/03_validate_oscillation_detection.py',

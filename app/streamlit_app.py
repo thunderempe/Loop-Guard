@@ -20,6 +20,7 @@ if str(ROOT_DIR) not in sys.path:
 from app.helpers import (
     load_simulated_demo_data,
     load_tep_demo_data,
+    is_tep_demo_subset,
     validate_and_preprocess_upload,
     evaluate_loop_diagnostics,
     generate_plain_headline,
@@ -261,6 +262,8 @@ elif data_source == "Demo: TEP Reactor Temperature":
         data_error = err_msg
     else:
         active_loops_dict = loops_dict
+        if is_tep_demo_subset():
+            st.sidebar.caption("Using committed demo subset (Run 51 of 5). Full TEP dataset contains 100 runs per fault.")
 
 elif data_source == "Upload your own loop CSV":
     active_ruleset = "simulation"

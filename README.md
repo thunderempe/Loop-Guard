@@ -145,27 +145,29 @@ python -m venv venv
 pip install -r requirements.txt
 ```
 
-### 2. Downloading the TEP Benchmark Data & Creating Demo Subsets
+### 2. Running TEP Demo Mode and Downloading Full Benchmark Data
 
-The raw Tennessee Eastman Process simulation files are large and excluded via `.gitignore`.
-1. Download the extended TEP training dataset published by Rieth et al. (2017) from the Harvard Dataverse:
-   * **URL:** [https://doi.org/10.7910/DVN/6C3JR1](https://doi.org/10.7910/DVN/6C3JR1)
-2. Place the downloaded `.RData` files into the `data/tep/` folder:
-   * `data/tep/TEP_FaultFree_Training.RData`
-   * `data/tep/TEP_Faulty_Training.RData`
+* **Out of the box TEP demo:**  
+  A compact derived demonstration dataset is committed under `data/tep_demo/` (61 KB compressed). You can select **"Demo: TEP Reactor Temperature"** in the dashboard sidebar immediately upon cloning with zero downloads required.
 
-The dashboard TEP demonstration mode reads two preprocessed subset files from `scratch/`:
-* `scratch/tep_cache_ff_train.pkl` (fault-free baseline runs)
-* `scratch/tep_faulty_train_subset.csv.gz` (faulty candidate runs 1 to 100)
-
-To create these subset files from the raw `.RData` assets, run the extraction scripts in order:
+* **Downloading the full TEP benchmark dataset (Optional):**  
+  The raw Tennessee Eastman Process simulation files total over 2 GB and are excluded via `.gitignore`. To run full evaluations across all 100 simulation runs:
+  1. Download the extended TEP training dataset published by Rieth et al. (2017) from the Harvard Dataverse:
+     * **URL:** [https://doi.org/10.7910/DVN/6C3JR1](https://doi.org/10.7910/DVN/6C3JR1)
+  2. Place the downloaded `.RData` files into the `data/tep/` folder:
+     * `data/tep/TEP_FaultFree_Training.RData`
+     * `data/tep/TEP_Faulty_Training.RData`
+  3. Extract the scratch files using the extraction scripts:
 
 ```bash
-# 1. Extract float32 fault-free baseline cache (writes scratch/tep_cache_ff_train.pkl)
+# 1. Extract float32 fault free baseline cache (writes scratch/tep_cache_ff_train.pkl)
 python scratch/tep_01_faultfree_structure.py
 
-# 2. Extract faulty candidate runs 1..100 subset (writes scratch/tep_faulty_train_subset.csv.gz)
+# 2. Extract faulty candidate runs 1 to 100 subset (writes scratch/tep_faulty_train_subset.csv.gz)
 python scratch/tep_05_faulty_train_extract.py
+
+# 3. Optional: Regenerate the committed demo slice (writes data/tep_demo/tep_reactor_temp_demo.csv.gz)
+python scratch/extract_tep_demo_subset.py
 ```
 
 ### 3. Running the Test Suite
@@ -233,7 +235,8 @@ Loop Guard/
 │   └── streamlit_app.py                 # Multi-page dashboard interface
 ├── data/
 │   ├── simulated/                       # Synthetic labeled loop CSV datasets
-│   └── tep/                             # TEP RData benchmark files (downloaded, gitignored)
+│   ├── tep/                             # TEP RData benchmark files (downloaded, gitignored)
+│   └── tep_demo/                        # Compact derived TEP demonstration files (committed)
 ├── notebooks/                           # Reproducible experimental and validation scripts
 │   ├── 00_sanity_check.py               # Checks environment and verifies TEP/CSV data assets
 │   ├── 01_generate_dataset.py           # Generates initial 60-loop ideal labeled dataset
@@ -250,6 +253,7 @@ Loop Guard/
 │   ├── 12_generate_fresh2000_datasets.py# Generates out-of-sample fresh-seed (+2000) datasets
 │   └── 13_evaluate_fresh2000.py         # One-time out-of-sample evaluation of D#3 v2
 ├── scratch/                             # Exploratory analysis and Phase 3 TEP evaluation
+│   ├── extract_tep_demo_subset.py       # Extracts compact demo slice to data/tep_demo/
 │   ├── part_c_frozen_rules.md           # Formal rules frozen on TEP DEV split (runs 1-50)
 │   ├── tep_01_faultfree_structure.py    # Caches fault-free baseline to tep_cache_ff_train.pkl
 │   ├── tep_05_faulty_train_extract.py   # Extracts candidate subset to tep_faulty_train_subset.csv.gz

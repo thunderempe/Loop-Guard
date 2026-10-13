@@ -9,14 +9,18 @@ Runs compute_stiction_detection_batch() over all 60 loops and reports:
   5. Full per-loop table sorted by stiction_flag then fault_type
 """
 import sys
-sys.path.insert(0, r'D:\Loop Gaurd')
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 import pandas as pd
 import numpy as np
 from src.diagnostics import compute_stiction_detection_batch
 
 # -- Load -------------------------------------------------------------------
-df = pd.read_csv(r'D:\Loop Gaurd\data\simulated\labeled_loops.csv')
+df = pd.read_csv(ROOT / 'data' / 'simulated' / 'labeled_loops.csv')
 print(f"Loaded {df.shape[0]:,} rows, {df['loop_id'].nunique()} loops")
 
 results = compute_stiction_detection_batch(df, settle_steps=0)

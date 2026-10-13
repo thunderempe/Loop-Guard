@@ -8,14 +8,18 @@ Runs the diagnostic over all 60 loops in labeled_loops.csv and prints:
   4. Separation ratio: sensor_drift mean vs. next-worst fault type
 """
 import sys
-sys.path.insert(0, r'D:\Loop Gaurd')
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 import pandas as pd
 import numpy as np
 from src.diagnostics import compute_setpoint_tracking_batch
 
 # ── Load data ──────────────────────────────────────────────────────────────
-df = pd.read_csv(r'D:\Loop Gaurd\data\simulated\labeled_loops.csv')
+df = pd.read_csv(ROOT / 'data' / 'simulated' / 'labeled_loops.csv')
 print(f"Loaded: {df.shape[0]:,} rows, {df['loop_id'].nunique()} loops\n")
 
 # ── Compute metrics over all 60 loops ──────────────────────────────────────

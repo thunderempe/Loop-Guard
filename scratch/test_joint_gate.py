@@ -6,7 +6,9 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-PROJECT_ROOT = Path(r'D:\Loop Gaurd')
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
 clean_df = pd.read_csv(PROJECT_ROOT / 'data/simulated/labeled_loops.csv')
 noisy_df = pd.read_csv(PROJECT_ROOT / 'data/simulated/labeled_loops_noisy.csv')
 disturb_df = pd.read_csv(PROJECT_ROOT / 'data/simulated/labeled_loops_disturb.csv')
