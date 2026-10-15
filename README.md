@@ -2,6 +2,18 @@
 
 > An automated health monitor for industrial PID control loops that spots hidden controller faults from routine operational data.
 
+![Loop Guard Intro](docs/images/intro.png)
+
+*Intro screen: Overview of the Loop Guard platform and interactive loop architecture.*
+
+![Fleet Health Overview](docs/images/overview.png)
+
+*Fleet Overview: Health status, Harris Index, and key indicators across all control loops.*
+
+![Diagnostic Drill-Down](docs/images/drilldown_faulty.png)
+
+*Diagnostic Drill-Down: Detailed time series, valve phase plane, and automated root-cause detection for faulty loops.*
+
 ---
 
 ## What Problem Does This Solve?
